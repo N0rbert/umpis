@@ -16,7 +16,7 @@ fi
 
 if [ "$UID" -ne "0" ]
 then
-    echo "Please run this script as root user with 'sudo ./umpis.sh'"
+    echo "Please run this script as root user with 'sudo -E ./umpis.sh'"
     exit
 fi
 
@@ -26,7 +26,30 @@ set -x
 # Initialize
 export DEBIAN_FRONTEND=noninteractive
 
+# Configure MATE desktop
+## keyboard layouts, Alt+Shift for layout toggle
+sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd layouts "['us', 'ru']"
+sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd model "''"
+sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd options "['grp\tgrp:alt_shift_toggle', 'grp_led\tgrp_led:scroll']"
+
+## terminal
+cat <<EOF > /tmp/dconf-mate-terminal
+[keybindings]
+help='disabled'
+
+[profiles/default]
+allow-bold=false
+background-color='#FFFFFFFFDDDD'
+palette='#2E2E34343636:#CCCC00000000:#4E4E9A9A0606:#C4C4A0A00000:#34346565A4A4:#757550507B7B:#060698209A9A:#D3D3D7D7CFCF:#555557575353:#EFEF29292929:#8A8AE2E23434:#FCFCE9E94F4F:#72729F9FCFCF:#ADAD7F7FA8A8:#3434E2E2E2E2:#EEEEEEEEECEC'
+bold-color='#000000000000'
+foreground-color='#000000000000'
+visible-name='Default'
+scrollback-unlimited=true
+EOF
+sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
+
 # Setup the system
+rm -vf /var/lib/apt/lists/*
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock
 systemctl stop unattended-upgrades.service
 apt-get purge unattended-upgrades -y
@@ -43,9 +66,12 @@ sed -i "s/^Prompt=lts/Prompt=never/" /etc/update-manager/release-upgrades
 
 # Install updates
 apt-get update
-apt-get dist-upgrade -y
+apt-get dist-upgrade -o DPkg::Options::=--force-confdef --force-yes -y
 apt-get install -f -y
 dpkg --configure -a
+
+# Restricted extras
+apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras
 
 # Git
 apt-get install -y git
@@ -156,7 +182,7 @@ apt-get install -y playonlinux
 
 # Y PPA Manager
 apt-get install -y ppa-purge
-add-apt-repository -y ppa:y-ppa-manager/ubuntu
+add-apt-repository -y ppa:webupd8team/y-ppa-manager
 apt-get update
 apt-get install -y y-ppa-manager
 
@@ -189,9 +215,9 @@ apt-get install -y ubuntu-make
 usermod -a -G dialout $USER
 sudo -u $SUDO_USER -- umake electronics arduino
 
-
-
 # Cleaning up
 apt-get autoremove -y
+
+echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
 
 exit 0
