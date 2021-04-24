@@ -5,12 +5,10 @@ if lsb_release -cs | grep -qE "bionic|focal"; then
     if lsb_release -cs | grep -q "bionic"; then
         ver=bionic
     else
-        echo "Ubuntu MATE 20.04 LTS is not supported yet!"
         ver=focal
-        exit 2
     fi
 else
-    echo "Currently only Ubuntu MATE 18.04 LTS is supported!"
+    echo "Currently only Ubuntu MATE 18.04 LTS and 20.04 LTS are supported!"
     exit 1
 fi
 
@@ -21,6 +19,7 @@ then
 fi
 
 echo "Welcome to the Ubuntu MATE post-install script!"
+#set -e
 set -x
 
 # Initialize
@@ -49,9 +48,9 @@ EOF
 sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
 
 # Setup the system
-rm -vf /var/lib/apt/lists/*
-rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock
-systemctl stop unattended-upgrades.service
+rm -vrf /var/lib/apt/lists/* || true
+rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
+systemctl stop unattended-upgrades.service || true
 apt-get purge unattended-upgrades -y
 echo 'APT::Periodic::Enable "0";' > /etc/apt/apt.conf.d/99periodic-disable
 
@@ -77,10 +76,19 @@ apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras
 apt-get install -y git
 
 # RabbitVCS integration to Caja
-apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
-sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
-cd ~/.local/share/caja-python/extensions
-sudo -u $SUDO_USER -- wget https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
+if [ "$ver" == "bionic" ]; then
+    apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
+    sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
+    cd ~/.local/share/caja-python/extensions
+    sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
+fi
+
+if [ "$ver" == "focal" ]; then
+    apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
+    sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
+    cd ~/.local/share/caja-python/extensions
+    sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py
+fi
 
 # GIMP
 apt-get install -y gimp
@@ -92,7 +100,11 @@ apt-get install -y inkscape
 apt-get install -y doublecmd-gtk
 
 # System tools
-apt-get install -y htop mc aptitude synaptic apt-xapian-index fslint apt-file
+if [ "$ver" == "bionic" ]; then
+apt-get install -y fslint
+fi
+
+apt-get install -y htop mc aptitude synaptic apt-xapian-index apt-file
 update-apt-xapian-index
 apt-file update 
 
@@ -100,8 +112,21 @@ apt-file update
 apt-get install -y kate
 
 # Meld 1.5.3 as in https://askubuntu.com/a/965151/66509
-wget http://security.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
-apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
+cd /tmp
+
+wget -c http://security.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
+
+if [ "$ver" == "bionic" ]; then
+    apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
+fi
+
+if [ "$ver" == "focal" ]; then
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
+    apt-get install -y ./python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-glade2_2.24.0-5.1ubuntu2_amd64.deb
+    apt-get install -y ./python-glade2_2.24.0-5.1ubuntu2_amd64.deb
+    apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
+fi
 
 cat <<EOF > /etc/apt/preferences.d/pin-meld
 Package: meld
@@ -138,8 +163,16 @@ apt install -y --allow-downgrades /tmp/pandoc*.deb;
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev
 apt-get install -y evince
 
-sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/3.4
-sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/3.4')"
+if [ "$ver" == "bionic" ]; then
+    r_ver="3.4"
+fi
+if [ "$ver" == "focal" ]; then
+    r_ver="3.6"
+fi
+
+sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
+sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+
     ## FIXME on lua-filter side
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
 
@@ -174,6 +207,7 @@ cat <<\EOF > /tmp/fenced_code.patch
  }?[ ]*\n                                # Optional closing }
 EOF
 
+apt-get install -y --reinstall python3-markdown
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
 sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
 
@@ -192,10 +226,11 @@ apt-get update
 apt-get install -y telegram
 
 # NotepadQQ
-
-add-apt-repository -y ppa:notepadqq-team/notepadqq
-apt-get update
-apt-get install -y notepadqq
+if [ "$ver" == "bionic" ]; then
+    add-apt-repository -y ppa:notepadqq-team/notepadqq
+    apt-get update
+    apt-get install -y notepadqq
+fi
 
 # Install locale packages
 apt-get install -y `check-language-support -l en` `check-language-support -l ru`
@@ -211,12 +246,12 @@ add-apt-repository -y ppa:lyzardking/ubuntu-make
 apt-get update
 apt-get install -y ubuntu-make
 
+# Cleaning up
+apt-get autoremove -y
+
 ## Arduino
 usermod -a -G dialout $USER
 sudo -u $SUDO_USER -- umake electronics arduino
-
-# Cleaning up
-apt-get autoremove -y
 
 echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
 
