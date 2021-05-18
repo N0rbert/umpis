@@ -51,7 +51,7 @@ sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-termina
 rm -vrf /var/lib/apt/lists/* || true
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
-apt-get purge unattended-upgrades -y
+apt-get purge unattended-upgrades ubuntu-advantage-tools -y
 echo 'APT::Periodic::Enable "0";' > /etc/apt/apt.conf.d/99periodic-disable
 
 systemctl disable apt-daily.service
