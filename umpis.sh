@@ -69,6 +69,9 @@ apt-get dist-upgrade -o DPkg::Options::=--force-confdef --force-yes -y
 apt-get install -f -y
 dpkg --configure -a
 
+# add-apt-repository
+apt-get install -y software-properties-common
+
 # Restricted extras
 apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras
 
