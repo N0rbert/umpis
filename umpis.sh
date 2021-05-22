@@ -48,7 +48,6 @@ EOF
 sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
 
 # Setup the system
-rm -vrf /var/lib/apt/lists/* || true
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
 apt-get purge unattended-upgrades ubuntu-advantage-tools -y
@@ -64,6 +63,7 @@ sed -i "s/^Prompt=normal/Prompt=never/" /etc/update-manager/release-upgrades
 sed -i "s/^Prompt=lts/Prompt=never/" /etc/update-manager/release-upgrades
 
 # Install updates
+rm -vrf /var/lib/apt/lists/* || true
 apt-get update
 apt-get dist-upgrade -o DPkg::Options::=--force-confdef --force-yes -y
 apt-get install -f -y
@@ -248,6 +248,9 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 add-apt-repository -y ppa:lyzardking/ubuntu-make
 apt-get update
 apt-get install -y ubuntu-make
+
+# Remove possibly installed WSL utilites
+apt-get purge -y wslu
 
 # Cleaning up
 apt-get autoremove -y
