@@ -50,7 +50,8 @@ sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-termina
 # Setup the system
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
-apt-get purge unattended-upgrades ubuntu-advantage-tools -y
+apt-get purge unattended-upgrades -y || true
+apt-get purge ubuntu-advantage-tools -y || true
 echo 'APT::Periodic::Enable "0";' > /etc/apt/apt.conf.d/99periodic-disable
 
 systemctl disable apt-daily.service
@@ -117,7 +118,7 @@ apt-get install -y kate
 # Meld 1.5.3 as in https://askubuntu.com/a/965151/66509
 cd /tmp
 
-wget -c http://security.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
+wget -c http://old-releases.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
 
 if [ "$ver" == "bionic" ]; then
     apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
