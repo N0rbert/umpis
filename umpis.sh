@@ -70,8 +70,8 @@ apt-get dist-upgrade -o DPkg::Options::=--force-confdef --force-yes -y
 apt-get install -f -y
 dpkg --configure -a
 
-# add-apt-repository
-apt-get install -y software-properties-common
+# add-apt-repository, wget
+apt-get install -y software-properties-common wget
 
 # Restricted extras
 apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras
@@ -257,7 +257,7 @@ apt-get purge -y wslu
 apt-get autoremove -y
 
 ## Arduino
-usermod -a -G dialout $USER
+usermod -a -G dialout $SUDO_USER
 sudo -u $SUDO_USER -- umake electronics arduino
 
 echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
