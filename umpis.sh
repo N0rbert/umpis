@@ -177,7 +177,7 @@ fi
 sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
 sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
 
-    ## FIXME on lua-filter side
+    ## FIXME on bookdown side, waiting for 0.23
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
 
     ## fixes for LibreOffice <-> RStudio interaction as described in https://askubuntu.com/a/1258175/66509
@@ -214,6 +214,7 @@ EOF
 apt-get install -y --reinstall python3-markdown
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
 sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
+chown $SUDO_USER: ~/.config/markdown-extensions.txt
 
 # PlayOnLinux
 apt-get install -y playonlinux
