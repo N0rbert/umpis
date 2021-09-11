@@ -159,7 +159,7 @@ cd /tmp
     #LATEST_PANDOC_DEB_PATH=$(wget https://github.com/jgm/pandoc/releases/latest -O - | grep \.deb | grep href | sed 's/.*href="//g' | sed 's/\.deb.*/\.deb/g' | grep amd64)
     #echo $LATEST_PANDOC_DEB_PATH;
     #LATEST_PANDOC_DEB_URL="https://github.com${LATEST_PANDOC_DEB_PATH}";
-LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.11.2/pandoc-2.11.2-1-amd64.deb"
+LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.11.4/pandoc-2.11.4-1-amd64.deb"
 wget -c $LATEST_PANDOC_DEB_URL;
 apt install -y --allow-downgrades /tmp/pandoc*.deb;
 
