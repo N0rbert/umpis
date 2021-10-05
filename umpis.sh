@@ -108,7 +108,7 @@ if [ "$ver" == "bionic" ]; then
 apt-get install -y fslint
 fi
 
-apt-get install -y htop mc aptitude synaptic apt-xapian-index apt-file
+apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file
 update-apt-xapian-index
 apt-file update 
 
