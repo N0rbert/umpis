@@ -51,13 +51,26 @@ sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-termina
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
 apt-get purge unattended-upgrades -y || true
-apt-get purge ubuntu-advantage-tools -y || true
+
+if [ "$ver" == "bionic" ]; then # removal is safe only for Ubuntu 18.04 LTS
+    apt-get purge ubuntu-advantage-tools -y
+else # mask relevant services instead of removing the package on newer versions
+    systemctl stop ua-messaging.timer
+    systemctl stop ua-messaging.service
+    systemctl mask ua-messaging.timer
+    systemctl mask ua-messaging.service
+fi
+
 echo 'APT::Periodic::Enable "0";' > /etc/apt/apt.conf.d/99periodic-disable
 
-systemctl disable apt-daily.service
-systemctl disable apt-daily.timer
-systemctl disable apt-daily-upgrade.timer
-systemctl disable apt-daily-upgrade.service
+systemctl stop apt-daily.service
+systemctl stop apt-daily.timer
+systemctl stop apt-daily-upgrade.timer
+systemctl stop apt-daily-upgrade.service
+systemctl mask apt-daily.service
+systemctl mask apt-daily.timer
+systemctl mask apt-daily-upgrade.timer
+systemctl mask apt-daily-upgrade.service
 
 sed -i "s/^enabled=1/enabled=0/" /etc/default/apport
 sed -i "s/^Prompt=normal/Prompt=never/" /etc/update-manager/release-upgrades
