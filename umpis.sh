@@ -15,7 +15,7 @@ fi
 if [ "$UID" -ne "0" ]
 then
     echo "Please run this script as root user with 'sudo -E ./umpis.sh'"
-    exit
+    exit 3
 fi
 
 echo "Welcome to the Ubuntu MATE post-install script!"
@@ -118,7 +118,7 @@ apt-get install -y doublecmd-gtk
 
 # System tools
 if [ "$ver" == "bionic" ]; then
-apt-get install -y fslint
+    apt-get install -y fslint
 fi
 
 apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file
@@ -164,15 +164,17 @@ apt-get dist-upgrade -y
 
 # RStudio
 cd /tmp
-wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb
-apt-get install -y r-base-dev ./rstudio-latest-amd64.deb
+wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
+|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
+|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
+apt-get install -y ./rstudio-latest-amd64.deb
 
 # Pandoc
 cd /tmp
     #LATEST_PANDOC_DEB_PATH=$(wget https://github.com/jgm/pandoc/releases/latest -O - | grep \.deb | grep href | sed 's/.*href="//g' | sed 's/\.deb.*/\.deb/g' | grep amd64)
     #echo $LATEST_PANDOC_DEB_PATH;
     #LATEST_PANDOC_DEB_URL="https://github.com${LATEST_PANDOC_DEB_PATH}";
-LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.11.4/pandoc-2.11.4-1-amd64.deb"
+LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.16.1/pandoc-2.16.1-1-amd64.deb"
 wget -c $LATEST_PANDOC_DEB_URL;
 apt install -y --allow-downgrades /tmp/pandoc*.deb;
 
