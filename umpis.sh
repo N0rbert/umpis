@@ -137,7 +137,7 @@ if [[ "$ver" == "bionic" || "$ver" == "buster" ]]; then
     apt-get install -y fslint
 fi
 
-apt-get install -y htop mc aptitude synaptic apt-xapian-index apt-file
+apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file
 update-apt-xapian-index
 apt-file update 
 
@@ -204,13 +204,15 @@ apt-get dist-upgrade -y
 apt-get install -f -y
 apt-get dist-upgrade -y
 
-# R, RStudio
+# RStudio
 apt-get install -y r-base-dev
 
 if [ "$dpkg_arch" == "amd64" ]; then
-    cd /tmp
-    wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb
-    apt-get install -y ./rstudio-latest-amd64.deb
+	cd /tmp
+	wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
+	|| wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
+	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
+	apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
 fi
 
 # Pandoc
@@ -219,9 +221,9 @@ if [ "$dpkg_arch" == "amd64" ]; then
     #LATEST_PANDOC_DEB_PATH=$(wget https://github.com/jgm/pandoc/releases/latest -O - | grep \.deb | grep href | sed 's/.*href="//g' | sed 's/\.deb.*/\.deb/g' | grep amd64)
     #echo $LATEST_PANDOC_DEB_PATH;
     #LATEST_PANDOC_DEB_URL="https://github.com${LATEST_PANDOC_DEB_PATH}";
-    LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.11.2/pandoc-2.11.2-1-amd64.deb"
+    LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.16.1/pandoc-2.16.1-1-amd64.deb"
 elif [ "$dpkg_arch" == "arm64" ]; then
-    LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.12/pandoc-2.12-1-arm64.deb"
+    LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.16.1/pandoc-2.16.1-1-arm64.deb"
 fi
 
 if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
@@ -230,7 +232,7 @@ if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
 fi
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev 
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev
 if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
     apt-get install -y libgit2-dev
 fi
@@ -267,6 +269,8 @@ fi
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
     ## FIXME for is_abs_path on knitr 1.34
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
+    ## Xaringan
+    sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
 
 if [ "$dpkg_arch" == "amd64" ]; then
     ## fixes for LibreOffice <-> RStudio interaction as described in https://askubuntu.com/a/1258175/66509
