@@ -1,15 +1,44 @@
 #!/bin/bash
 # Ubuntu MATE post-install script
 
-if lsb_release -cs | grep -qE "bionic|focal"; then
+if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|buster|bullseye|bookworm"; then
     if lsb_release -cs | grep -q "bionic"; then
         ver=bionic
-    else
+    fi
+    if lsb_release -cs | grep -q "focal"; then
         ver=focal
     fi
+    if lsb_release -cs | grep -q "hirsute"; then
+        ver=hirsute
+    fi
+    if lsb_release -cs | grep -q "impish"; then
+        ver=impish
+    fi
+    if lsb_release -cs | grep -q "jammy"; then
+        ver=jammy
+    fi
+    if lsb_release -cs | grep -q "buster"; then
+        ver=buster
+    fi
+    if lsb_release -cs | grep -q "bullseye"; then
+        ver=bullseye
+    fi
+    if lsb_release -cs | grep -q "bookworm"; then
+        ver=bookworm
+    fi
 else
-    echo "Currently only Ubuntu MATE 18.04 LTS and 20.04 LTS are supported!"
+    echo "Currently only Debian 10, 11 and 12; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10 and upcoming 22.04 LTS are supported!"
     exit 1
+fi
+
+dpkg_arch=$(dpkg --print-architecture)
+if [ "$dpkg_arch" == "amd64" ]; then
+    use_ports=0
+elif [[ "$dpkg_arch" == "armhf" || "$dpkg_arch" == "arm64" ]]; then
+    use_ports=1
+else
+    echo "Currently only amd64 (x86_64), armhf and arm64 CPU architectures are supported!"
+    exit 2
 fi
 
 if [ "$UID" -ne "0" ]
@@ -19,7 +48,7 @@ then
 fi
 
 echo "Welcome to the Ubuntu MATE post-install script!"
-#set -e
+set -e
 set -x
 
 # Initialize
@@ -51,30 +80,17 @@ sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-termina
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
 apt-get purge unattended-upgrades -y || true
-
-if [ "$ver" == "bionic" ]; then # removal is safe only for Ubuntu 18.04 LTS
-    apt-get purge ubuntu-advantage-tools -y
-else # mask relevant services instead of removing the package on newer versions
-    systemctl stop ua-messaging.timer
-    systemctl stop ua-messaging.service
-    systemctl mask ua-messaging.timer
-    systemctl mask ua-messaging.service
-fi
-
+apt-get purge ubuntu-advantage-tools -y || true
 echo 'APT::Periodic::Enable "0";' > /etc/apt/apt.conf.d/99periodic-disable
 
-systemctl stop apt-daily.service
-systemctl stop apt-daily.timer
-systemctl stop apt-daily-upgrade.timer
-systemctl stop apt-daily-upgrade.service
-systemctl mask apt-daily.service
-systemctl mask apt-daily.timer
-systemctl mask apt-daily-upgrade.timer
-systemctl mask apt-daily-upgrade.service
+systemctl disable apt-daily.service || true
+systemctl disable apt-daily.timer || true
+systemctl disable apt-daily-upgrade.timer || true 
+systemctl disable apt-daily-upgrade.service || true
 
-sed -i "s/^enabled=1/enabled=0/" /etc/default/apport
-sed -i "s/^Prompt=normal/Prompt=never/" /etc/update-manager/release-upgrades
-sed -i "s/^Prompt=lts/Prompt=never/" /etc/update-manager/release-upgrades
+sed -i "s/^enabled=1/enabled=0/" /etc/default/apport || true
+sed -i "s/^Prompt=normal/Prompt=never/" /etc/update-manager/release-upgrades || true
+sed -i "s/^Prompt=lts/Prompt=never/" /etc/update-manager/release-upgrades || true
 
 # Install updates
 rm -vrf /var/lib/apt/lists/* || true
@@ -87,20 +103,20 @@ dpkg --configure -a
 apt-get install -y software-properties-common wget
 
 # Restricted extras
-apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras
+apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras || true
 
 # Git
 apt-get install -y git
 
 # RabbitVCS integration to Caja
-if [ "$ver" == "bionic" ]; then
+if [[ "$ver" == "bionic" || "$ver" == "buster" ]]; then
     apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
     sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
 fi
 
-if [ "$ver" == "focal" ]; then
+if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
     apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
@@ -117,11 +133,11 @@ apt-get install -y inkscape
 apt-get install -y doublecmd-gtk
 
 # System tools
-if [ "$ver" == "bionic" ]; then
+if [[ "$ver" == "bionic" || "$ver" == "buster" ]]; then
     apt-get install -y fslint
 fi
 
-apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file
+apt-get install -y htop mc aptitude synaptic apt-xapian-index apt-file
 update-apt-xapian-index
 apt-file update 
 
@@ -131,19 +147,39 @@ apt-get install -y kate
 # Meld 1.5.3 as in https://askubuntu.com/a/965151/66509
 cd /tmp
 
+if [[ "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
+    if [ "$dpkg_arch" == "amd64" ]; then
+        wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pycairo/python-cairo_1.16.2-2ubuntu2_amd64.deb
+        wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygobject-2/python-gobject-2_2.28.6-14ubuntu1_amd64.deb
+        apt-get install -y ./python-cairo_1.16.2-2ubuntu2_amd64.deb
+        apt-get install -y ./python-gobject-2_2.28.6-14ubuntu1_amd64.deb
+    elif [[ "$dpkg_arch" == "armhf" || "$dpkg_arch" == "arm64" ]]; then
+        wget -c "http://ports.ubuntu.com/pool/universe/p/pycairo/python-cairo_1.16.2-2ubuntu2_$dpkg_arch.deb"
+        wget -c "http://ports.ubuntu.com/pool/universe/p/pygobject-2/python-gobject-2_2.28.6-14ubuntu1_$dpkg_arch.deb"
+        apt-get install -y "./python-cairo_1.16.2-2ubuntu2_$dpkg_arch.deb"
+        apt-get install -y "./python-gobject-2_2.28.6-14ubuntu1_$dpkg_arch.deb"
+    fi
+fi
+
+if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
+    if [ "$dpkg_arch" == "amd64" ]; then
+        wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
+        apt-get install -y ./python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
+        wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-glade2_2.24.0-5.1ubuntu2_amd64.deb
+        apt-get install -y ./python-glade2_2.24.0-5.1ubuntu2_amd64.deb
+    elif [[ "$dpkg_arch" == "armhf" || "$dpkg_arch" == "arm64" ]]; then
+        wget -c "http://ports.ubuntu.com/pool/universe/p/pygtk/python-gtk2_2.24.0-5.1ubuntu2_$dpkg_arch.deb"
+        apt-get install -y "./python-gtk2_2.24.0-5.1ubuntu2_$dpkg_arch.deb"
+        wget -c "http://ports.ubuntu.com/pool/universe/p/pygtk/python-glade2_2.24.0-5.1ubuntu2_$dpkg_arch.deb"
+        apt-get install -y "./python-glade2_2.24.0-5.1ubuntu2_$dpkg_arch.deb"
+    fi
+fi
+
+if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
+apt-get install -y meld
+else
 wget -c http://old-releases.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
-
-if [ "$ver" == "bionic" ]; then
-    apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
-fi
-
-if [ "$ver" == "focal" ]; then
-    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
-    apt-get install -y ./python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
-    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-glade2_2.24.0-5.1ubuntu2_amd64.deb
-    apt-get install -y ./python-glade2_2.24.0-5.1ubuntu2_amd64.deb
-    apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
-fi
+apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
 
 cat <<EOF > /etc/apt/preferences.d/pin-meld
 Package: meld
@@ -151,54 +187,88 @@ Pin: version 1.5.3-1ubuntu1
 Pin-Priority: 1337
 EOF
 
+fi
+
 # VirtualBox
-apt-get install -y virtualbox
+if [[ "$dpkg_arch" == "amd64" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+    apt-get install -y virtualbox
+fi
 
 # LibreOffice
-add-apt-repository -y ppa:libreoffice/ppa
+if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+    add-apt-repository -y ppa:libreoffice/ppa
+fi
 apt-get update
 apt-get install libreoffice -y
 apt-get dist-upgrade -y
 apt-get install -f -y
 apt-get dist-upgrade -y
 
-# RStudio
-cd /tmp
-wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
-|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
-|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
-apt-get install -y ./rstudio-latest-amd64.deb
+# R, RStudio
+apt-get install -y r-base-dev
+
+if [ "$dpkg_arch" == "amd64" ]; then
+    cd /tmp
+    wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb
+    apt-get install -y ./rstudio-latest-amd64.deb
+fi
 
 # Pandoc
 cd /tmp
+if [ "$dpkg_arch" == "amd64" ]; then
     #LATEST_PANDOC_DEB_PATH=$(wget https://github.com/jgm/pandoc/releases/latest -O - | grep \.deb | grep href | sed 's/.*href="//g' | sed 's/\.deb.*/\.deb/g' | grep amd64)
     #echo $LATEST_PANDOC_DEB_PATH;
     #LATEST_PANDOC_DEB_URL="https://github.com${LATEST_PANDOC_DEB_PATH}";
-LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.16.1/pandoc-2.16.1-1-amd64.deb"
-wget -c $LATEST_PANDOC_DEB_URL;
-apt install -y --allow-downgrades /tmp/pandoc*.deb;
+    LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.11.2/pandoc-2.11.2-1-amd64.deb"
+elif [ "$dpkg_arch" == "arm64" ]; then
+    LATEST_PANDOC_DEB_URL="https://github.com/jgm/pandoc/releases/download/2.12/pandoc-2.12-1-arm64.deb"
+fi
+
+if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
+    wget -c $LATEST_PANDOC_DEB_URL;
+    apt install -y --allow-downgrades /tmp/pandoc*.deb;
+fi
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev 
+if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    apt-get install -y libgit2-dev
+fi
 apt-get install -y evince
 
 if [ "$ver" == "bionic" ]; then
     r_ver="3.4"
 fi
+if [ "$ver" == "buster" ]; then
+    r_ver="3.5"
+fi
 if [ "$ver" == "focal" ]; then
     r_ver="3.6"
 fi
+if [[ "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
+    r_ver="4.0"
+fi
+if [[ "$ver"  == "jammy" || "$ver" == "bookworm" ]]; then
+    r_ver="4.1"
+fi
 
-sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
-sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+if [ "$dpkg_arch" == "amd64" ]; then
+    sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
+    sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+elif [ "$dpkg_arch" == "arm64" ]; then
+    sudo -u $SUDO_USER -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
+    sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+elif [ "$dpkg_arch" == "armhf" ]; then
+    sudo -u $SUDO_USER -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
+    sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+fi
 
     ## FIXME on bookdown side, waiting for 0.23
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
     ## FIXME for is_abs_path on knitr 1.34
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
-    ## Xaringan
-    sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
 
+if [ "$dpkg_arch" == "amd64" ]; then
     ## fixes for LibreOffice <-> RStudio interaction as described in https://askubuntu.com/a/1258175/66509
     grep "^export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" ~/.profile || echo "export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" >> ~/.profile
     grep "^export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" ~/.bashrc || echo "export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" >> ~/.bashrc
@@ -206,6 +276,7 @@ sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/applications/
     sudo -u $SUDO_USER -- cp /usr/share/applications/rstudio.desktop ~/.local/share/applications/
     sudo -u $SUDO_USER -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  ~/.local/share/applications/rstudio.desktop
+fi
 
 # TexLive and fonts
 echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | /usr/bin/debconf-set-selections
@@ -216,6 +287,7 @@ apt-get install --reinstall -y ttf-mscorefonts-installer
 # ReText
 apt-get install -y retext
 
+if [[ "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "focal" ]]; then
 cat <<\EOF > /tmp/fenced_code.patch
 --- org	2021-04-24 18:00:50.029754001 +0300
 +++ new	2021-04-24 18:10:19.790492001 +0300
@@ -232,6 +304,8 @@ EOF
 
 apt-get install -y --reinstall python3-markdown
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
+fi
+
 sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
 chown $SUDO_USER: ~/.config/markdown-extensions.txt
 
@@ -239,15 +313,22 @@ chown $SUDO_USER: ~/.config/markdown-extensions.txt
 apt-get install -y playonlinux
 
 # Y PPA Manager
-apt-get install -y ppa-purge
-add-apt-repository -y ppa:webupd8team/y-ppa-manager
-apt-get update
-apt-get install -y y-ppa-manager
+apt-get install -y ppa-purge || true
+
+if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+    add-apt-repository -y ppa:webupd8team/y-ppa-manager
+    apt-get update
+    apt-get install -y y-ppa-manager
+fi
 
 # Telegram
-add-apt-repository -y ppa:atareao/telegram
-apt-get update
-apt-get install -y telegram
+if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+    if [ "$dpkg_arch" == "amd64" ]; then
+        add-apt-repository -y ppa:atareao/telegram
+        apt-get update
+        apt-get install -y telegram
+    fi
+fi
 
 # NotepadQQ
 if [ "$ver" == "bionic" ]; then
@@ -260,25 +341,39 @@ fi
 apt-get install -y `check-language-support -l en` `check-language-support -l ru`
 
 # Flatpak
-add-apt-repository -y ppa:alexlarsson/flatpak
+if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
+    add-apt-repository -y ppa:alexlarsson/flatpak
+fi
 apt-get update
 apt-get install -y flatpak
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Ubuntu Make
-add-apt-repository -y ppa:lyzardking/ubuntu-make
-apt-get update
-apt-get install -y ubuntu-make
+if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+    add-apt-repository -y ppa:lyzardking/ubuntu-make
+    apt-get update
+    apt-get install -y ubuntu-make
+fi
+
+umake_path=umake
+if [[  "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    apt-get install -y snapd
+    snap install ubuntu-make --classic
+    umake_path=/snap/bin/umake
+fi 
 
 # Remove possibly installed WSL utilites
-apt-get purge -y wslu
+apt-get purge -y wslu || true
 
 # Cleaning up
 apt-get autoremove -y
 
 ## Arduino
 usermod -a -G dialout $SUDO_USER
-sudo -u $SUDO_USER -- umake electronics arduino
+
+if [ "$ver" != "jammy" ]; then
+    sudo -u $SUDO_USER -- $umake_path electronics arduino
+fi
 
 echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
 
