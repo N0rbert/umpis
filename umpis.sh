@@ -31,6 +31,12 @@ else
     exit 1
 fi
 
+is_docker=0
+if [ -f /.dockerenv ]; then
+    echo "Note: we are running inside Docker container, so some adjustings will be applied!"
+    is_docker=1
+fi
+
 dpkg_arch=$(dpkg --print-architecture)
 if [ "$dpkg_arch" == "amd64" ]; then
     use_ports=0
@@ -55,6 +61,7 @@ set -x
 export DEBIAN_FRONTEND=noninteractive
 
 # Configure MATE desktop
+if [ $is_docker == 0 ]; then
 ## keyboard layouts, Alt+Shift for layout toggle
 sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd layouts "['us', 'ru']"
 sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd model "''"
@@ -75,6 +82,7 @@ visible-name='Default'
 scrollback-unlimited=true
 EOF
 sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
+fi
 
 # Setup the system
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
@@ -255,14 +263,26 @@ if [[ "$ver"  == "jammy" || "$ver" == "bookworm" ]]; then
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
-    sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
-    sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+    if [ $is_docker == 0 ] ; then
+        sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
+        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+    else
+        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+    fi
 elif [ "$dpkg_arch" == "arm64" ]; then
-    sudo -u $SUDO_USER -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
-    sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+    if [ $is_docker == 0 ] ; then
+        sudo -u $SUDO_USER -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
+        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+    else
+        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+    fi
 elif [ "$dpkg_arch" == "armhf" ]; then
-    sudo -u $SUDO_USER -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
-    sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+    if [ $is_docker == 0 ] ; then
+        sudo -u $SUDO_USER -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
+        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+    else
+        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+    fi
 fi
 
     ## FIXME on bookdown side, waiting for 0.23
@@ -270,7 +290,7 @@ fi
     ## FIXME for is_abs_path on knitr 1.34
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
     ## Xaringan
-    sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+    sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
 
 if [ "$dpkg_arch" == "amd64" ]; then
     ## fixes for LibreOffice <-> RStudio interaction as described in https://askubuntu.com/a/1258175/66509
@@ -310,6 +330,7 @@ apt-get install -y --reinstall python3-markdown
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
 fi
 
+mkdir -p ~/.config
 sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
 chown $SUDO_USER: ~/.config/markdown-extensions.txt
 
@@ -359,12 +380,14 @@ if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" 
     apt-get install -y ubuntu-make
 fi
 
-umake_path=umake
-if [[  "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
-    apt-get install -y snapd
-    snap install ubuntu-make --classic
-    umake_path=/snap/bin/umake
-fi 
+if [ $is_docker == 0 ] ; then
+    umake_path=umake
+    if [[  "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+        apt-get install -y snapd
+        snap install ubuntu-make --classic
+        umake_path=/snap/bin/umake
+    fi 
+fi
 
 # Remove possibly installed WSL utilites
 apt-get purge -y wslu || true
@@ -373,10 +396,12 @@ apt-get purge -y wslu || true
 apt-get autoremove -y
 
 ## Arduino
-usermod -a -G dialout $SUDO_USER
+if [ "$is_docker" == "0" ] ; then
+    usermod -a -G dialout $SUDO_USER
 
-if [ "$ver" != "jammy" ]; then
-    sudo -u $SUDO_USER -- $umake_path electronics arduino
+    if [ "$ver" != "jammy" ]; then
+        sudo -u $SUDO_USER -- $umake_path electronics arduino
+    fi
 fi
 
 echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
