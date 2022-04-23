@@ -27,7 +27,7 @@ if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|buster|bullseye
         ver=bookworm
     fi
 else
-    echo "Currently only Debian 10, 11 and 12; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10 and upcoming 22.04 LTS are supported!"
+    echo "Currently only Debian 10, 11 and 12; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10 and 22.04 LTS are supported!"
     exit 1
 fi
 
@@ -203,7 +203,7 @@ if [[ "$dpkg_arch" == "amd64" && "$ver" != "buster" && "$ver" != "bullseye" && "
 fi
 
 # LibreOffice
-if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+if [[ "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     add-apt-repository -y ppa:libreoffice/ppa
 fi
 apt-get update
@@ -216,11 +216,21 @@ apt-get dist-upgrade -y
 apt-get install -y r-base-dev
 
 if [ "$dpkg_arch" == "amd64" ]; then
+    if [ "$ver" == "jammy" ]; then
+        add-apt-repository -y ppa:nrbrtx/libssl1
+    fi
+
 	cd /tmp
 	wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
 	apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
+	
+    if [ "$ver" == "jammy" ]; then
+        grep "^alias rstudio=\"rstudio --no-sandbox\"" ~/.profile || echo "alias rstudio=\"rstudio --no-sandbox\"" >> ~/.profile
+        grep "^alias rstudio=\"rstudio --no-sandbox\"" ~/.bashrc || echo "alias rstudio=\"rstudio --no-sandbox\"" >> ~/.bashrc
+        sed -i "s|bin/rstudio|bin/rstudio --no-sandbox|" /usr/share/applications/rstudio.desktop
+	fi
 fi
 
 # Pandoc
@@ -374,7 +384,7 @@ apt-get install -y flatpak
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Ubuntu Make
-if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+if [[ "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     add-apt-repository -y ppa:lyzardking/ubuntu-make
     apt-get update
     apt-get install -y ubuntu-make
@@ -389,6 +399,16 @@ if [ $is_docker == 0 ] ; then
     fi 
 fi
 
+# fixes for Jammy
+if [ "$ver" == "jammy" ]; then
+    # Readline fix for LP#1926256 bug
+    echo "set enable-bracketed-paste Off" | sudo -u $SUDO_USER tee ~/.inputrc
+
+    # VTE fix for LP#1922276 bug
+    add-apt-repository -y ppa:nrbrtx/vte
+    apt-get dist-upgrade -y
+fi
+
 # Remove possibly installed WSL utilites
 apt-get purge -y wslu || true
 
@@ -396,12 +416,10 @@ apt-get purge -y wslu || true
 apt-get autoremove -y
 
 ## Arduino
-if [ "$is_docker" == "0" ] ; then
+if [ $is_docker == 0 ] ; then
     usermod -a -G dialout $SUDO_USER
 
-    if [ "$ver" != "jammy" ]; then
-        sudo -u $SUDO_USER -- $umake_path electronics arduino
-    fi
+    sudo -u $SUDO_USER -- $umake_path electronics arduino
 fi
 
 echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
