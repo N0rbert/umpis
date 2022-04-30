@@ -417,6 +417,21 @@ if [ "$ver" == "jammy" ]; then
     # Readline fix for LP#1926256 bug
     echo "set enable-bracketed-paste Off" | sudo -u $SUDO_USER tee ~/.inputrc
 
+cat <<\EOF > /etc/X11/Xsession.d/20x11-add-hasoption
+# temporary fix for LP# 1922414, 1955135 and 1955136 bugs
+# read OPTIONFILE
+OPTIONS=$(cat "$OPTIONFILE") || true
+
+has_option() {
+  if [ "${OPTIONS#*
+$1}" != "$OPTIONS" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+EOF
+
     # VTE fix for LP#1922276 bug
     add-apt-repository -y ppa:nrbrtx/vte
     apt-get dist-upgrade -y
