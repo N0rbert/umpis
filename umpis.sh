@@ -281,8 +281,11 @@ fi
 if [[ "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
     r_ver="4.0"
 fi
-if [[ "$ver"  == "jammy" || "$ver" == "bookworm" ]]; then
+if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
+fi
+if [ "$ver" == "bookworm" ]; then
+    r_ver="4.2"
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
