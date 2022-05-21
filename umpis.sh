@@ -373,7 +373,7 @@ if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" 
 fi
 
 # Telegram
-if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+if [[ "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     if [ "$dpkg_arch" == "amd64" ]; then
         add-apt-repository -y ppa:atareao/telegram
         apt-get update
