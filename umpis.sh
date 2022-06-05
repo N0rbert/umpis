@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE post-install script
 
-if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|buster|bullseye|bookworm"; then
+if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|kinetic|buster|bullseye|bookworm"; then
     if lsb_release -cs | grep -q "bionic"; then
         ver=bionic
     fi
@@ -17,6 +17,9 @@ if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|buster|bullseye
     if lsb_release -cs | grep -q "jammy"; then
         ver=jammy
     fi
+    if lsb_release -cs | grep -q "kinetic"; then
+        ver=kinetic
+    fi
     if lsb_release -cs | grep -q "buster"; then
         ver=buster
     fi
@@ -27,7 +30,7 @@ if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|buster|bullseye
         ver=bookworm
     fi
 else
-    echo "Currently only Debian 10, 11 and 12; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10 and 22.04 LTS are supported!"
+    echo "Currently only Debian 10, 11 and 12; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10, 22.04 LTS and upcoming 22.10 are supported!"
     exit 1
 fi
 
@@ -137,7 +140,7 @@ if [[ "$ver" == "bionic" || "$ver" == "buster" ]]; then
     sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
     apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
@@ -196,7 +199,7 @@ if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" =
     fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
 apt-get install -y meld
 else
 wget -c http://old-releases.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
@@ -229,8 +232,10 @@ apt-get dist-upgrade -y
 apt-get install -y r-base-dev
 
 if [ "$dpkg_arch" == "amd64" ]; then
-    if [ "$ver" == "jammy" ]; then
-        add-apt-repository -y ppa:nrbrtx/libssl1
+    if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+        add-apt-repository -n -y ppa:nrbrtx/libssl1 || true
+        sed -i "s/kinetic/jammy/g" /etc/apt/sources.list.d/*.list || true
+        apt-get update
     fi
 
 	cd /tmp
@@ -264,7 +269,7 @@ fi
 
 # bookdown install for local user
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev
-if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
     apt-get install -y libgit2-dev
 fi
 apt-get install -y evince
@@ -284,7 +289,7 @@ fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [ "$ver" == "bookworm" ]; then
+if [[ "$ver" == "bookworm" || "$ver" == "kinetic" ]]; then
     r_ver="4.2"
 fi
 
@@ -366,14 +371,14 @@ apt-get install -y playonlinux
 # Y PPA Manager
 apt-get install -y ppa-purge || true
 
-if [[ "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+if [[ "$ver" != "kinetic" && "$ver" != "jammy" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     add-apt-repository -y ppa:webupd8team/y-ppa-manager
     apt-get update
     apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+if [[ "$ver" != "kinetic" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     if [ "$dpkg_arch" == "amd64" ]; then
         add-apt-repository -y ppa:atareao/telegram
         apt-get update
@@ -400,7 +405,7 @@ apt-get install -y flatpak
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Ubuntu Make
-if [[ "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
+if [[ "$ver" != "kinetic" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     add-apt-repository -y ppa:lyzardking/ubuntu-make
     apt-get update
     apt-get install -y ubuntu-make
@@ -408,7 +413,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[  "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" != "kinetic" && "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y snapd
         snap install ubuntu-make --classic
         umake_path=/snap/bin/umake
@@ -447,10 +452,12 @@ apt-get purge -y wslu || true
 apt-get autoremove -y
 
 ## Arduino
-if [ $is_docker == 0 ] ; then
-    usermod -a -G dialout $SUDO_USER
+if [ "$ver" != "kinetic" ]; then
+    if [ $is_docker == 0 ] ; then
+        usermod -a -G dialout $SUDO_USER
 
-    sudo -u $SUDO_USER -- $umake_path electronics arduino
+        sudo -u $SUDO_USER -- $umake_path electronics arduino
+    fi
 fi
 
 echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
