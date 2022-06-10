@@ -216,6 +216,7 @@ fi
 # VirtualBox
 if [[ "$dpkg_arch" == "amd64" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     apt-get install -y virtualbox
+    usermod -a -G vboxusers $SUDO_USER
 fi
 
 # LibreOffice
