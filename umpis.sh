@@ -153,6 +153,7 @@ EOF
 
 # VirtualBox
 apt-get install -y virtualbox
+usermod -a -G vboxusers $SUDO_USER
 
 # LibreOffice
 add-apt-repository -y ppa:libreoffice/ppa
