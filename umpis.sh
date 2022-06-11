@@ -165,7 +165,8 @@ Pin-Priority: 1337
 EOF
 
 # VirtualBox
-apt-get install -y virtualbox
+echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
+apt-get install -y virtualbox virtualbox-ext-pack virtualbox-guest-additions-iso
 usermod -a -G vboxusers $SUDO_USER
 
 # LibreOffice
