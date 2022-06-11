@@ -47,6 +47,19 @@ scrollback-unlimited=true
 EOF
 sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
 
+## window management keyboard shortcuts for Ubuntu MATE 18.04 LTS
+if [ "$ver" == "bionic" ]; then
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings unmaximize '<Mod4>Down'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings maximize '<Mod4>Up'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-ne '<Alt><Mod4>Right'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-sw '<Shift><Alt><Mod4>Left'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-side-e '<Mod4>Right'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-se '<Shift><Alt><Mod4>Right'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings move-to-center '<Alt><Mod4>c'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-nw '<Alt><Mod4>Left'
+    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-side-w '<Mod4>Left'
+fi
+
 # Setup the system
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
