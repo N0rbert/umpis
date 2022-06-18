@@ -104,13 +104,26 @@ fi
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
 apt-get purge unattended-upgrades -y || true
-apt-get purge ubuntu-advantage-tools -y || true
+
+if [ "$ver" == "bionic" ]; then # removal is safe only for Ubuntu 18.04 LTS
+    apt-get purge ubuntu-advantage-tools -y
+else # mask relevant services instead of removing the package on newer versions
+    systemctl stop ua-messaging.timer || true
+    systemctl stop ua-messaging.service || true
+    systemctl mask ua-messaging.timer || true
+    systemctl mask ua-messaging.service || true
+fi
+
 echo 'APT::Periodic::Enable "0";' > /etc/apt/apt.conf.d/99periodic-disable
 
-systemctl disable apt-daily.service || true
-systemctl disable apt-daily.timer || true
-systemctl disable apt-daily-upgrade.timer || true 
-systemctl disable apt-daily-upgrade.service || true
+systemctl stop apt-daily.service || true
+systemctl stop apt-daily.timer || true
+systemctl stop apt-daily-upgrade.timer || true
+systemctl stop apt-daily-upgrade.service || true
+systemctl mask apt-daily.service || true
+systemctl mask apt-daily.timer || true
+systemctl mask apt-daily-upgrade.timer || true
+systemctl mask apt-daily-upgrade.service || true
 
 sed -i "s/^enabled=1/enabled=0/" /etc/default/apport || true
 sed -i "s/^Prompt=normal/Prompt=never/" /etc/update-manager/release-upgrades || true
@@ -200,9 +213,9 @@ if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" =
 fi
 
 if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
-apt-get install -y meld
+  apt-get install -y meld
 else
-wget -c http://old-releases.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
+  wget -c http://old-releases.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
 apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
 
 cat <<EOF > /etc/apt/preferences.d/pin-meld
@@ -234,23 +247,16 @@ apt-get dist-upgrade -y
 apt-get install -y r-base-dev
 
 if [ "$dpkg_arch" == "amd64" ]; then
-    if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
-        add-apt-repository -n -y ppa:nrbrtx/libssl1 || true
-        sed -i "s/kinetic/jammy/g" /etc/apt/sources.list.d/*.list || true
-        apt-get update
-    fi
+  cd /tmp
 
-	cd /tmp
+  if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+    wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
+  else
 	wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
+  fi
 	apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
-	
-    if [ "$ver" == "jammy" ]; then
-        grep "^alias rstudio=\"rstudio --no-sandbox\"" ~/.profile || echo "alias rstudio=\"rstudio --no-sandbox\"" >> ~/.profile
-        grep "^alias rstudio=\"rstudio --no-sandbox\"" ~/.bashrc || echo "alias rstudio=\"rstudio --no-sandbox\"" >> ~/.bashrc
-        sed -i "s|bin/rstudio|bin/rstudio --no-sandbox|" /usr/share/applications/rstudio.desktop
-	fi
 fi
 
 # Pandoc
@@ -271,6 +277,7 @@ fi
 
 # bookdown install for local user
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev
+
 if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
     apt-get install -y libgit2-dev
 fi
@@ -318,17 +325,21 @@ elif [ "$dpkg_arch" == "armhf" ]; then
     fi
 fi
 
+if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+    sudo -u $SUDO_USER -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
+else
     ## FIXME on bookdown side, waiting for 0.23
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
     ## FIXME for is_abs_path on knitr 1.34
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
     ## Xaringan
     sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
+fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
-    ## fixes for LibreOffice <-> RStudio interaction as described in https://askubuntu.com/a/1258175/66509
-    grep "^export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" ~/.profile || echo "export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" >> ~/.profile
-    grep "^export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" ~/.bashrc || echo "export LD_LIBRARY_PATH=\"/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH\"" >> ~/.bashrc
+    ## fixes for LibreOffice <-> RStudio interaction
+    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
+    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.bashrc || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.bashrc
 
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/applications/
     sudo -u $SUDO_USER -- cp /usr/share/applications/rstudio.desktop ~/.local/share/applications/
@@ -364,6 +375,7 @@ patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --
 fi
 
 mkdir -p ~/.config
+chown -R $SUDO_USER:  ~/.config
 sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
 chown $SUDO_USER: ~/.config/markdown-extensions.txt
 
