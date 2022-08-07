@@ -194,7 +194,7 @@ wget -c $LATEST_PANDOC_DEB_URL;
 apt install -y --allow-downgrades /tmp/pandoc*.deb;
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev
 apt-get install -y evince
 
 if [ "$ver" == "bionic" ]; then
