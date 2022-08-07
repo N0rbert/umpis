@@ -184,6 +184,19 @@ wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351
 || wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
 apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
 
+sudo -u $SUDO_USER -- mkdir -p ~/.config/rstudio
+cat <<EOF > /home/$SUDO_USER/.config/rstudio/rstudio-prefs.json 
+{
+    "check_for_updates": false,
+    "pdf_previewer": "rstudio",
+    "posix_terminal_shell": "bash",
+    "submit_crash_reports": false
+}
+EOF
+chown $SUDO_USER: ~/.config/rstudio/rstudio-prefs.json
+
+echo 'crash-handling-enabled="0"' | sudo -u $SUDO_USER -- tee ~/.config/rstudio/crash-handler.conf
+
 # Pandoc
 cd /tmp
     #LATEST_PANDOC_DEB_PATH=$(wget https://github.com/jgm/pandoc/releases/latest -O - | grep \.deb | grep href | sed 's/.*href="//g' | sed 's/\.deb.*/\.deb/g' | grep amd64)
