@@ -1,7 +1,7 @@
 # umpis
 
 This is Ubuntu MATE post-install script for my personal needs.
-Currently it supports Ubuntu MATE 18.04 LTS and 20.04 LTS.
+Currently it supports Debian 10, 11 and 12; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10, 22.04 LTS and upcoming 22.10.
 
 One can launch this script on freshly installed system using single command below:
 
