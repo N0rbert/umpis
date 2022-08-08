@@ -303,7 +303,7 @@ if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
 fi
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev
 
 if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
     apt-get install -y libgit2-dev
