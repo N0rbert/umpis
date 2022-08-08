@@ -259,6 +259,33 @@ if [ "$dpkg_arch" == "amd64" ]; then
 	apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
 fi
 
+if [ $is_docker == 0 ]; then
+	sudo -u $SUDO_USER -- mkdir -p ~/.config/rstudio
+	cat <<EOF > ~/.config/rstudio/rstudio-prefs.json 
+{
+    "check_for_updates": false,
+    "pdf_previewer": "rstudio",
+    "posix_terminal_shell": "bash",
+    "submit_crash_reports": false
+}
+EOF
+	chown $SUDO_USER: ~/.config/rstudio/rstudio-prefs.json
+
+	echo 'crash-handling-enabled="0"' | sudo -u $SUDO_USER -- tee ~/.config/rstudio/crash-handler.conf
+else
+	mkdir -p /etc/skel/.config/rstudio
+	cat <<EOF > /etc/skel/.config/rstudio/rstudio-prefs.json 
+{
+    "check_for_updates": false,
+    "pdf_previewer": "rstudio",
+    "posix_terminal_shell": "bash",
+    "submit_crash_reports": false
+}
+EOF
+
+  echo 'crash-handling-enabled="0"' > /etc/skel/.config/rstudio/crash-handler.conf
+fi
+
 # Pandoc
 cd /tmp
 if [ "$dpkg_arch" == "amd64" ]; then
