@@ -85,7 +85,6 @@ visible-name='Default'
 scrollback-unlimited=true
 EOF
 sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
-fi
 
 ## window management keyboard shortcuts for Ubuntu MATE 18.04 LTS
 if [ "$ver" == "bionic" ]; then
@@ -99,6 +98,7 @@ if [ "$ver" == "bionic" ]; then
     sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-nw '<Alt><Mod4>Left'
     sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-side-w '<Mod4>Left'
 fi
+fi # /is_docker
 
 # Setup the system
 rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
