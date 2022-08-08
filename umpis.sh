@@ -147,17 +147,29 @@ apt-get install -y git
 
 # RabbitVCS integration to Caja
 if [[ "$ver" == "bionic" || "$ver" == "buster" ]]; then
-    apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
+  apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
+
+  if [ $is_docker == 0 ]; then
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
     sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
+  else
+    mkdir -p /usr/local/share/caja-python/extensions
+    wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py -O /usr/local/share/caja-python/extensions/RabbitVCS.py
+  fi
 fi
 
 if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
-    apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
+  apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
+
+  if [ $is_docker == 0 ]; then
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
     sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py
+  else
+    mkdir -p /usr/local/share/caja-python/extensions
+    wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py -O /usr/local/share/caja-python/extensions/RabbitVCS.py
+  fi
 fi
 
 # GIMP
@@ -230,7 +242,9 @@ fi
 if [[ "$dpkg_arch" == "amd64" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" ]]; then
     echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
     apt-get install -y virtualbox virtualbox-ext-pack virtualbox-guest-additions-iso
+  if [ $is_docker == 0 ]; then
     usermod -a -G vboxusers $SUDO_USER
+  fi
 fi
 
 # LibreOffice
@@ -334,36 +348,50 @@ if [ "$dpkg_arch" == "amd64" ]; then
         sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
         sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
-        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
     fi
 elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
         sudo -u $SUDO_USER -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
         sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
-        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
     fi
 elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
         sudo -u $SUDO_USER -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
         sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
-        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
     fi
 fi
 
 if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+  if [ $is_docker == 0 ]; then
     sudo -u $SUDO_USER -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
+  else
+    R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
+  fi
 else
+  if [ $is_docker == 0 ]; then
     ## FIXME on bookdown side, waiting for 0.23
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
     ## FIXME for is_abs_path on knitr 1.34
     sudo -u $SUDO_USER -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
     ## Xaringan
     sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
+  else
+    ## FIXME on bookdown side, waiting for 0.23
+    R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
+    ## FIXME for is_abs_path on knitr 1.34
+    R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
+    ## Xaringan
+    R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
+  fi
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
+  if [ $is_docker == 0 ]; then
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.bashrc || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.bashrc
@@ -371,6 +399,15 @@ if [ "$dpkg_arch" == "amd64" ]; then
     sudo -u $SUDO_USER -- mkdir -p ~/.local/share/applications/
     sudo -u $SUDO_USER -- cp /usr/share/applications/rstudio.desktop ~/.local/share/applications/
     sudo -u $SUDO_USER -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  ~/.local/share/applications/rstudio.desktop
+  else
+    ## fixes for LibreOffice <-> RStudio interaction
+    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" /etc/skel/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> /etc/skel/.profile
+    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" /etc/skel/.bashrc || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> /etc/skel/.bashrc
+
+    mkdir -p /usr/local/share/applications/
+    cp /usr/share/applications/rstudio.desktop /usr/local/share/applications/
+    sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|" /usr/local/share/applications/rstudio.desktop
+  fi
 fi
 
 # TexLive and fonts
@@ -401,10 +438,14 @@ apt-get install -y --reinstall python3-markdown
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
 fi
 
-mkdir -p ~/.config
-chown -R $SUDO_USER:  ~/.config
-sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
-chown $SUDO_USER: ~/.config/markdown-extensions.txt
+if [ $is_docker == 0 ]; then
+  mkdir -p ~/.config
+  chown -R $SUDO_USER:  ~/.config
+  sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
+  chown $SUDO_USER: ~/.config/markdown-extensions.txt
+else
+  echo mathjax >> /etc/skel/.config/markdown-extensions.txt
+fi
 
 # PlayOnLinux
 apt-get install -y playonlinux
@@ -435,7 +476,8 @@ if [ "$ver" == "bionic" ]; then
 fi
 
 # Install locale packages
-apt-get install -y `check-language-support -l en` `check-language-support -l ru`
+apt-get install -y locales
+apt-get install -y $(check-language-support -l en) $(check-language-support -l ru)
 
 # Flatpak
 if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
