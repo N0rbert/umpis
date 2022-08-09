@@ -187,7 +187,7 @@ fi
 
 apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file
 update-apt-xapian-index
-apt-file update 
+apt-file update
 
 # Kate text editor
 apt-get install -y kate
@@ -274,7 +274,7 @@ fi
 
 if [ $is_docker == 0 ]; then
 	sudo -u "$SUDO_USER" -- mkdir -p ~/.config/rstudio
-	cat <<EOF > ~/.config/rstudio/rstudio-prefs.json 
+	cat <<EOF > ~/.config/rstudio/rstudio-prefs.json
 {
     "check_for_updates": false,
     "pdf_previewer": "rstudio",
@@ -287,7 +287,7 @@ EOF
 	echo 'crash-handling-enabled="0"' | sudo -u "$SUDO_USER" -- tee ~/.config/rstudio/crash-handler.conf
 else
 	mkdir -p /etc/skel/.config/rstudio
-	cat <<EOF > /etc/skel/.config/rstudio/rstudio-prefs.json 
+	cat <<EOF > /etc/skel/.config/rstudio/rstudio-prefs.json
 {
     "check_for_updates": false,
     "pdf_previewer": "rstudio",
@@ -476,7 +476,7 @@ fi
 
 # Install locale packages
 apt-get install -y locales
-apt-get install -y "$(check-language-support -l en)" "$(check-language-support -l ru)"
+apt-get install -y $(check-language-support -l en) $(check-language-support -l ru)
 
 # Flatpak
 if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
