@@ -41,10 +41,8 @@ if [ -f /.dockerenv ]; then
 fi
 
 dpkg_arch=$(dpkg --print-architecture)
-if [ "$dpkg_arch" == "amd64" ]; then
-    use_ports=0
-elif [[ "$dpkg_arch" == "armhf" || "$dpkg_arch" == "arm64" ]]; then
-    use_ports=1
+if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "armhf" || "$dpkg_arch" == "arm64" ]]; then
+    echo "Detected CPU architecture is $dpkg_arch, it is supported."
 else
     echo "Currently only amd64 (x86_64), armhf and arm64 CPU architectures are supported!"
     exit 2
@@ -66,9 +64,9 @@ export DEBIAN_FRONTEND=noninteractive
 # Configure MATE desktop
 if [ $is_docker == 0 ]; then
 ## keyboard layouts, Alt+Shift for layout toggle
-sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd layouts "['us', 'ru']"
-sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd model "''"
-sudo -EHu $SUDO_USER -- gsettings set org.mate.peripherals-keyboard-xkb.kbd options "['grp\tgrp:alt_shift_toggle', 'grp_led\tgrp_led:scroll']"
+sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd layouts "['us', 'ru']"
+sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd model "''"
+sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd options "['grp\tgrp:alt_shift_toggle', 'grp_led\tgrp_led:scroll']"
 
 ## terminal
 cat <<EOF > /tmp/dconf-mate-terminal
@@ -84,19 +82,20 @@ foreground-color='#000000000000'
 visible-name='Default'
 scrollback-unlimited=true
 EOF
-sudo -EHu $SUDO_USER -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
+
+sudo -EHu "$SUDO_USER" -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
 
 ## window management keyboard shortcuts for Ubuntu MATE 18.04 LTS
 if [ "$ver" == "bionic" ]; then
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings unmaximize '<Mod4>Down'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings maximize '<Mod4>Up'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-ne '<Alt><Mod4>Right'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-sw '<Shift><Alt><Mod4>Left'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-side-e '<Mod4>Right'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-se '<Shift><Alt><Mod4>Right'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings move-to-center '<Alt><Mod4>c'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-nw '<Alt><Mod4>Left'
-    sudo -EHu $SUDO_USER -- gsettings set org.mate.Marco.window-keybindings tile-to-side-w '<Mod4>Left'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings unmaximize '<Mod4>Down'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings maximize '<Mod4>Up'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-ne '<Alt><Mod4>Right'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-sw '<Shift><Alt><Mod4>Left'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-side-e '<Mod4>Right'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-se '<Shift><Alt><Mod4>Right'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings move-to-center '<Alt><Mod4>c'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-nw '<Alt><Mod4>Left'
+    sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-side-w '<Mod4>Left'
 fi
 fi # /is_docker
 
@@ -150,9 +149,9 @@ if [[ "$ver" == "bionic" || "$ver" == "buster" ]]; then
   apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
 
   if [ $is_docker == 0 ]; then
-    sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
+    sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
-    sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
+    sudo -u "$SUDO_USER" -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
   else
     mkdir -p /usr/local/share/caja-python/extensions
     wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py -O /usr/local/share/caja-python/extensions/RabbitVCS.py
@@ -163,9 +162,9 @@ if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" =
   apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
 
   if [ $is_docker == 0 ]; then
-    sudo -u $SUDO_USER -- mkdir -p ~/.local/share/caja-python/extensions
+    sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/caja-python/extensions
     cd ~/.local/share/caja-python/extensions
-    sudo -u $SUDO_USER -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py
+    sudo -u "$SUDO_USER" -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py
   else
     mkdir -p /usr/local/share/caja-python/extensions
     wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py -O /usr/local/share/caja-python/extensions/RabbitVCS.py
@@ -243,7 +242,7 @@ if [[ "$dpkg_arch" == "amd64" && "$ver" != "buster" && "$ver" != "bullseye" && "
     echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
     apt-get install -y virtualbox virtualbox-ext-pack virtualbox-guest-additions-iso
   if [ $is_docker == 0 ]; then
-    usermod -a -G vboxusers $SUDO_USER
+    usermod -a -G vboxusers "$SUDO_USER"
   fi
 fi
 
@@ -274,7 +273,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi
 
 if [ $is_docker == 0 ]; then
-	sudo -u $SUDO_USER -- mkdir -p ~/.config/rstudio
+	sudo -u "$SUDO_USER" -- mkdir -p ~/.config/rstudio
 	cat <<EOF > ~/.config/rstudio/rstudio-prefs.json 
 {
     "check_for_updates": false,
@@ -283,9 +282,9 @@ if [ $is_docker == 0 ]; then
     "submit_crash_reports": false
 }
 EOF
-	chown $SUDO_USER: ~/.config/rstudio/rstudio-prefs.json
+	chown "$SUDO_USER": ~/.config/rstudio/rstudio-prefs.json
 
-	echo 'crash-handling-enabled="0"' | sudo -u $SUDO_USER -- tee ~/.config/rstudio/crash-handler.conf
+	echo 'crash-handling-enabled="0"' | sudo -u "$SUDO_USER" -- tee ~/.config/rstudio/crash-handler.conf
 else
 	mkdir -p /etc/skel/.config/rstudio
 	cat <<EOF > /etc/skel/.config/rstudio/rstudio-prefs.json 
@@ -345,22 +344,22 @@ fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
-        sudo -u $SUDO_USER -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
-        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+        sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
+        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
         R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
     fi
 elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
-        sudo -u $SUDO_USER -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
-        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+        sudo -u "$SUDO_USER" -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
+        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
         R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
     fi
 elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
-        sudo -u $SUDO_USER -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
-        sudo -u $SUDO_USER -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+        sudo -u "$SUDO_USER" -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
+        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
         R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
     fi
@@ -368,18 +367,18 @@ fi
 
 if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
   if [ $is_docker == 0 ]; then
-    sudo -u $SUDO_USER -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
+    sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
   else
     R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
   fi
 else
   if [ $is_docker == 0 ]; then
     ## FIXME on bookdown side, waiting for 0.23
-    sudo -u $SUDO_USER -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
+    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
     ## FIXME for is_abs_path on knitr 1.34
-    sudo -u $SUDO_USER -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
+    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
     ## Xaringan
-    sudo -u $SUDO_USER -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
+    sudo -u "$SUDO_USER" -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
   else
     ## FIXME on bookdown side, waiting for 0.23
     R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
@@ -396,9 +395,9 @@ if [ "$dpkg_arch" == "amd64" ]; then
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.bashrc || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.bashrc
 
-    sudo -u $SUDO_USER -- mkdir -p ~/.local/share/applications/
-    sudo -u $SUDO_USER -- cp /usr/share/applications/rstudio.desktop ~/.local/share/applications/
-    sudo -u $SUDO_USER -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  ~/.local/share/applications/rstudio.desktop
+    sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/applications/
+    sudo -u "$SUDO_USER" -- cp /usr/share/applications/rstudio.desktop ~/.local/share/applications/
+    sudo -u "$SUDO_USER" -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  ~/.local/share/applications/rstudio.desktop
   else
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" /etc/skel/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> /etc/skel/.profile
@@ -440,9 +439,9 @@ fi
 
 if [ $is_docker == 0 ]; then
   mkdir -p ~/.config
-  chown -R $SUDO_USER:  ~/.config
-  sudo -u $SUDO_USER -- echo mathjax >> ~/.config/markdown-extensions.txt
-  chown $SUDO_USER: ~/.config/markdown-extensions.txt
+  chown -R "$SUDO_USER":  ~/.config
+  echo mathjax | sudo -u "$SUDO_USER" -- tee -a ~/.config/markdown-extensions.txt
+  chown "$SUDO_USER": ~/.config/markdown-extensions.txt
 else
   echo mathjax >> /etc/skel/.config/markdown-extensions.txt
 fi
@@ -477,7 +476,7 @@ fi
 
 # Install locale packages
 apt-get install -y locales
-apt-get install -y $(check-language-support -l en) $(check-language-support -l ru)
+apt-get install -y "$(check-language-support -l en)" "$(check-language-support -l ru)"
 
 # Flatpak
 if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
@@ -506,7 +505,7 @@ fi
 # fixes for Jammy
 if [ "$ver" == "jammy" ]; then
     # Readline fix for LP#1926256 bug
-    echo "set enable-bracketed-paste Off" | sudo -u $SUDO_USER tee ~/.inputrc
+    echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee ~/.inputrc
 
 cat <<\EOF > /etc/X11/Xsession.d/20x11-add-hasoption
 # temporary fix for LP# 1922414, 1955135 and 1955136 bugs
@@ -537,9 +536,9 @@ apt-get autoremove -y
 ## Arduino
 if [ "$ver" != "kinetic" ]; then
     if [ $is_docker == 0 ] ; then
-        usermod -a -G dialout $SUDO_USER
+        usermod -a -G dialout "$SUDO_USER"
 
-        sudo -u $SUDO_USER -- $umake_path electronics arduino
+        sudo -u "$SUDO_USER" -- $umake_path electronics arduino
     fi
 fi
 
