@@ -527,6 +527,18 @@ EOF
     apt-get dist-upgrade -y
 fi
 
+# fixes for Bullseye
+if [ "$ver" == "bullseye" ]; then
+    # Readline fix for LP#1926256 bug
+    echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee ~/.inputrc
+
+	# VTE fix for LP#1922276 bug
+	apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
+	add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+	apt-get update
+    apt-get dist-upgrade -y
+fi
+
 # Remove possibly installed WSL utilites
 apt-get purge -y wslu || true
 
