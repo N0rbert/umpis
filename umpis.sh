@@ -285,36 +285,40 @@ EOF
 fi
 
 # VirtualBox
-if [[ "$dpkg_arch" == "amd64" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
-    echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
-    apt-get install -y virtualbox
-  if [ $is_docker == 0 ]; then
-    usermod -a -G vboxusers "$SUDO_USER"
-  fi
-fi
-if [[ "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" ]]; then
-    apt-get install -y ca-certificates gpg apt-transport-https
-    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | apt-key add
-
-    deb_ver="$ver"
-    if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
-      deb_ver=stretch
-    elif [ "$ver" == "astra10" ]; then
-      deb_ver=buster
-      cd /tmp
-      wget -c http://deb.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb
-      apt-get install -y ./libvpx5_1.7.0-3+deb10u1_amd64.deb
+if [ "$dpkg_arch" == "amd64" ]; then
+    if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+        echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
+        apt-get install -y virtualbox
+      if [ $is_docker == 0 ]; then
+        usermod -a -G vboxusers "$SUDO_USER"
+      fi
     fi
+    if [[ "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" ]]; then
+        apt-get install -y ca-certificates gpg apt-transport-https
+        wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | apt-key add
 
-    echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
-    apt-get update
-    apt-get install -y virtualbox-6.1
-  if [ $is_docker == 0 ]; then
-    usermod -a -G vboxusers "$SUDO_USER"
-  fi
-else
-  apt-get install -y virtualbox virtualbox-ext-pack virtualbox-guest-additions-iso
-fi
+        deb_ver="$ver"
+        if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
+          deb_ver=stretch
+        elif [ "$ver" == "astra10" ]; then
+          deb_ver=buster
+          cd /tmp
+          wget -c http://deb.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb
+          apt-get install -y ./libvpx5_1.7.0-3+deb10u1_amd64.deb
+        fi
+
+        echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
+        apt-get update
+        apt-get install -y virtualbox-6.1
+      if [ $is_docker == 0 ]; then
+        usermod -a -G vboxusers "$SUDO_USER"
+      fi
+    else
+      apt-get install -y virtualbox || true
+      apt-get install -y virtualbox-ext-pack || true
+      apt-get install -y virtualbox-guest-additions-iso || true
+    fi
+fi #/amd64
 
 # LibreOffice
 if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
@@ -349,12 +353,17 @@ if [ "$dpkg_arch" == "amd64" ]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
+  elif [ "$ver" == "bookworm" ]; then
+    echo "Note: there is no RStudio version suitable for Debian 12, so it will not be installed."
   else
 	wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
   fi
+  
+  if [ "$ver" != "bookworm" ]; then
 	apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
+  fi
 fi
 
 if [ $is_docker == 0 ]; then
@@ -481,7 +490,7 @@ else
   fi
 fi
 
-if [ "$dpkg_arch" == "amd64" ]; then
+if [[ "$dpkg_arch" == "amd64" && "$ver" != "bookworm" ]]; then
   if [ $is_docker == 0 ]; then
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
