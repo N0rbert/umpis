@@ -230,7 +230,7 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
     wget -c http://deb.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.49_all.deb
     apt-get install -y ./apt-xapian-index_0.49_all.deb
 else
-    apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file
+    apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
 fi
 
 update-apt-xapian-index
