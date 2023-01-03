@@ -606,7 +606,8 @@ fi
 
 # Install locale packages
 apt-get install -y locales
-apt-get install -y $(check-language-support -l en) $(check-language-support -l ru)
+apt-get install -y $(check-language-support -l en) $(check-language-support -l ru) || true
+apt-get install -y --reinstall --install-recommends task-russian task-russian-desktop || true
 
 # Flatpak
 if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
@@ -644,9 +645,17 @@ if [ $is_docker == 0 ] ; then
     umake_path=umake
     if [[ "$ver" != "kinetic" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y snapd
-        snap install ubuntu-make --classic
+        snap install ubuntu-make --classic --edge
+        snap refresh ubuntu-make --classic --edge
+
         umake_path=/snap/bin/umake
-    fi 
+
+        # need to use SDDM on Debian because of https://github.com/ubuntu/ubuntu-make/issues/678
+        apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
+        unset DEBIAN_FRONTEND
+        dpkg-reconfigure sddm
+        export DEBIAN_FRONTEND=noninteractive
+    fi
 fi
 
 # fixes for Jammy
@@ -697,7 +706,7 @@ if [[ "$ver" != "stretch" && "$ver" != "kinetic" && "$ver" != "astra9" ]]; then
     if [ $is_docker == 0 ] ; then
         usermod -a -G dialout "$SUDO_USER"
 
-        sudo -u "$SUDO_USER" -- $umake_path electronics arduino
+        sudo -u "$SUDO_USER" -- $umake_path electronics arduino-legacy
     fi
 fi
 
