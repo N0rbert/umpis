@@ -273,8 +273,14 @@ fi
 if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
   apt-get install -y meld
 else
+  cd /tmp
+  if [ "$dpkg_arch" == "amd64" ]; then
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtksourceview/python-gtksourceview2_2.10.1-3_amd64.deb http://archive.ubuntu.com/ubuntu/pool/universe/g/gtksourceview2/libgtksourceview2.0-0_2.10.5-3_amd64.deb http://archive.ubuntu.com/ubuntu/pool/universe/g/gtksourceview2/libgtksourceview2.0-common_2.10.5-3_all.deb
+    apt-get install -y --reinstall --allow-downgrades python-gtksourceview2 || apt-get install -y --reinstall --allow-downgrades ./python-gtksourceview2_2.10.1-3_amd64.deb ./libgtksourceview2.0-0_2.10.5-3_amd64.deb ./libgtksourceview2.0-common_2.10.5-3_all.deb
+  fi # TODO add manual download links for armhf, arm64
+
   wget -c http://old-releases.ubuntu.com/ubuntu/pool/universe/m/meld/meld_1.5.3-1ubuntu1_all.deb -O /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb 
-apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
+  apt-get install -y --allow-downgrades /var/cache/apt/archives/meld_1.5.3-1ubuntu1_all.deb
 
 cat <<EOF > /etc/apt/preferences.d/pin-meld
 Package: meld
