@@ -452,47 +452,47 @@ fi
 if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
         sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
-        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
-        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
 elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
         sudo -u "$SUDO_USER" -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
-        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
-        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
 elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
         sudo -u "$SUDO_USER" -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
-        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+        sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
-        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.rstudio.com/')"
+        R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
 fi
 
 if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
   if [ $is_docker == 0 ]; then
-    sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
+    sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
   else
-    R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.rstudio.com/')"
+    R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
   fi
 else
   if [ $is_docker == 0 ]; then
     ## FIXME on bookdown side, waiting for 0.23
-    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
+    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.r-project.org')"
     ## FIXME for is_abs_path on knitr 1.34
-    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
+    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.r-project.org')"
     ## Xaringan
-    sudo -u "$SUDO_USER" -- R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
+    sudo -u "$SUDO_USER" -- R -e "install.packages('xaringan', repos='http://cran.r-project.org/')"
   else
     ## FIXME on bookdown side, waiting for 0.23
-    R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.rstudio.com')"
+    R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.r-project.org')"
     ## FIXME for is_abs_path on knitr 1.34
-    R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.rstudio.com')"
+    R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.r-project.org')"
     ## Xaringan
-    R -e "install.packages('xaringan', repos='http://cran.rstudio.com/')"
+    R -e "install.packages('xaringan', repos='http://cran.r-project.org/')"
   fi
 fi
 
