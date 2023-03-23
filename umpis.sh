@@ -1,24 +1,15 @@
 #!/bin/bash
-# Ubuntu MATE post-install script
+# Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|kinetic|stretch|buster|bullseye|bookworm|orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE "bionic|focal|jammy|stretch|buster|bullseye|bookworm|orel|1.7_x86-64"; then
     if lsb_release -cs | grep -q "bionic"; then
         ver=bionic
     fi
     if lsb_release -cs | grep -q "focal"; then
         ver=focal
     fi
-    if lsb_release -cs | grep -q "hirsute"; then
-        ver=hirsute
-    fi
-    if lsb_release -cs | grep -q "impish"; then
-        ver=impish
-    fi
     if lsb_release -cs | grep -q "jammy"; then
         ver=jammy
-    fi
-    if lsb_release -cs | grep -q "kinetic"; then
-        ver=kinetic
     fi
     if lsb_release -cs | grep -q "stretch"; then
         ver=stretch
@@ -39,7 +30,7 @@ if lsb_release -cs | grep -qE "bionic|focal|hirsute|impish|jammy|kinetic|stretch
         ver=astra10
     fi
 else
-    echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 18.04 LTS, 20.04 LTS, 21.04, 21.10, 22.04 LTS and 22.10 are supported!"
+    echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 18.04 LTS, 20.04 LTS and 22.04 LTS are supported!"
     exit 1
 fi
 
@@ -169,7 +160,6 @@ apt-get install -y git
 
 # RabbitVCS integration to Caja
 if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
-
     if [ "$ver" == "astra10" ]; then
         # download packages from 18.04 LTS
         cd /tmp
@@ -193,7 +183,7 @@ if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" 
     fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
   apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
 
   if [ $is_docker == 0 ]; then
@@ -242,7 +232,7 @@ apt-get install -y kate
 # Meld 1.5.3 as in https://askubuntu.com/a/965151/66509
 cd /tmp
 
-if [[ "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
+if [ "$ver" == "bullseye" ]; then
     if [ "$dpkg_arch" == "amd64" ]; then
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pycairo/python-cairo_1.16.2-2ubuntu2_amd64.deb
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygobject-2/python-gobject-2_2.28.6-14ubuntu1_amd64.deb
@@ -256,7 +246,7 @@ if [[ "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
     fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
     if [ "$dpkg_arch" == "amd64" ]; then
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
         apt-get install -y ./python-gtk2_2.24.0-5.1ubuntu2_amd64.deb
@@ -270,7 +260,7 @@ if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" =
     fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -350,26 +340,28 @@ if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
   fi
 fi
 
+if [ "$ver" == "bionic" ]; then
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-key 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
+  echo "deb http://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
+  apt-get update
+fi
+
 apt-get install -y r-base-dev
 
 if [ "$dpkg_arch" == "amd64" ]; then
   cd /tmp
 
-  if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+  if [[ "$ver" == "jammy" || "$ver" == "bookworm" ]]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
-  elif [ "$ver" == "bookworm" ]; then
-    echo "Note: there is no RStudio version suitable for Debian 12, so it will not be installed."
   else
 	wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
   fi
   
-  if [ "$ver" != "bookworm" ]; then
-	apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
-  fi
+  apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
 fi
 
 if [ $is_docker == 0 ]; then
@@ -411,14 +403,14 @@ elif [ "$dpkg_arch" == "arm64" ]; then
 fi
 
 if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
-    wget -c $LATEST_PANDOC_DEB_URL;
+    wget -c "$LATEST_PANDOC_DEB_URL";
     apt install -y --allow-downgrades /tmp/pandoc*.deb;
 fi
 
 # bookdown install for local user
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev
 
-if [[ "$ver" == "focal" || "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "jammy" || "$ver" == "kinetic" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra10" ]]; then
     apt-get install -y libgit2-dev
 fi
 
@@ -430,49 +422,46 @@ fi
 
 apt-get install -y evince
 
-if [ "$ver" == "bionic" ]; then
-    r_ver="3.4"
-fi
 if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="3.5"
 fi
 if [[ "$ver" == "focal" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     r_ver="3.6"
 fi
-if [[ "$ver" == "hirsute" || "$ver" == "impish" || "$ver" == "bullseye" ]]; then
+if [ "$ver" == "bullseye" ]; then
     r_ver="4.0"
 fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [[ "$ver" == "bookworm" || "$ver" == "kinetic" ]]; then
+if [[ "$ver" == "bionic" || "$ver" == "bookworm" ]]; then
     r_ver="4.2"
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
-        sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/$r_ver
+        sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
         sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
         R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
 elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
-        sudo -u "$SUDO_USER" -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/$r_ver
+        sudo -u "$SUDO_USER" -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/"$r_ver"
         sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
         R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
 elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
-        sudo -u "$SUDO_USER" -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/$r_ver
+        sudo -u "$SUDO_USER" -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/"$r_ver"
         sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
         R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
 fi
 
-if [[ "$ver" == "jammy" || "$ver" == "kinetic" ]]; then
+if [[ "$ver" == "jammy" || "$ver" == "bookworm" ]]; then
   if [ $is_docker == 0 ]; then
     sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
   else
@@ -588,14 +577,14 @@ apt-get install -y playonlinux
 # Y PPA Manager
 apt-get install -y ppa-purge || true
 
-if [[ "$ver" != "kinetic" && "$ver" != "jammy" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     add-apt-repository -y ppa:webupd8team/y-ppa-manager
     apt-get update
     apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "kinetic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     if [ "$dpkg_arch" == "amd64" ]; then
         add-apt-repository -y ppa:atareao/telegram
         apt-get update
@@ -627,7 +616,7 @@ if [ "$ver" != "astra9" ]; then
 fi
 
 # Ubuntu Make
-if [[ "$ver" != "kinetic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     add-apt-repository -y ppa:lyzardking/ubuntu-make
     apt-get update
     apt-get install -y ubuntu-make
@@ -649,7 +638,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[ "$ver" != "kinetic" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y snapd
         snap install ubuntu-make --classic --edge
         snap refresh ubuntu-make --classic --edge
@@ -689,14 +678,18 @@ EOF
     apt-get dist-upgrade -y
 fi
 
-# fixes for Bullseye and Jammy
-if [[ "$ver" == "bullseye" || "$ver" == "jammy" ]]; then
+# fixes for Bullseye, Bookworm and Jammy
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
     # Readline fix for LP#1926256 bug
     echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee ~/.inputrc
 
 	# VTE fix for LP#1922276 bug
 	apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-	add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+	if [ "$ver" == "bookworm" ]; then
+	  echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
+	else
+	  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+	fi
 	apt-get update
     apt-get dist-upgrade -y
 fi
@@ -708,14 +701,14 @@ apt-get purge -y wslu || true
 apt-get autoremove -y
 
 ## Arduino
-if [[ "$ver" != "stretch" && "$ver" != "kinetic" && "$ver" != "astra9" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "astra9" ]]; then
     if [ $is_docker == 0 ] ; then
         usermod -a -G dialout "$SUDO_USER"
 
-        sudo -u "$SUDO_USER" -- $umake_path electronics arduino-legacy
+        sudo -u "$SUDO_USER" -- "$umake_path" electronics arduino-legacy
     fi
 fi
 
-echo "Ubuntu MATE post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
+echo "Ubuntu MATE (and Debian) post-install script finished! Reboot to apply all new settings and enjoy newly installed software."
 
 exit 0
