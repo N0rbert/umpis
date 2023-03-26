@@ -694,6 +694,20 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
     apt-get dist-upgrade -y
 fi
 
+# fixes for Jammy and Bookworm (see LP#1947420)
+if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
+  apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
+  
+  if [ "$ver" == "bookworm" ]; then
+    echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.list
+  else
+    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
+  fi
+
+  apt-get update
+  apt-get dist-upgrade -y
+fi
+
 # Remove possibly installed WSL utilites
 apt-get purge -y wslu || true
 
