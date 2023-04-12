@@ -54,7 +54,7 @@ then
     exit 3
 fi
 
-echo "Welcome to the Ubuntu MATE post-install script!"
+echo "Welcome to the Ubuntu MATE (and Debian) post-install script!"
 set -e
 set -x
 
@@ -638,8 +638,13 @@ fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[ "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y snapd
+
+        systemctl unmask snapd.seeded snapd
+        systemctl enable snapd.seeded snapd
+        systemctl start snapd.seeded snapd
+
         snap install ubuntu-make --classic --edge
         snap refresh ubuntu-make --classic --edge
 
