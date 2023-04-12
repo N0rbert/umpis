@@ -609,11 +609,9 @@ if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
     add-apt-repository -y ppa:alexlarsson/flatpak
 fi
 
-if [ "$ver" != "astra9" ]; then
-    apt-get update
-    apt-get install -y flatpak
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-fi
+apt-get update
+apt-get install -y flatpak
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Ubuntu Make
 if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
