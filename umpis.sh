@@ -434,8 +434,11 @@ fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [[ "$ver" == "bionic" || "$ver" == "bookworm" ]]; then
+if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
+fi
+if [ "$ver" == "bionic" ]; then
+    r_ver="4.3"
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
