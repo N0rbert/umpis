@@ -168,7 +168,7 @@ if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" 
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/r/rabbitvcs/rabbitvcs-core_0.16-1.1_all.deb
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/python-caja/python-caja-common_1.20.0-1_all.deb
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/python-caja/python-caja_1.20.0-1_amd64.deb
-        apt-get install -y ./python-caja-common_1.20.0-1_all.deb ./python-caja_1.20.0-1_amd64.deb ./rabbitvcs-cli_0.16-1.1_all.deb ./python-svn_1.9.5-1_amd64.deb ./rabbitvcs-core_0.16-1.1_all.deb python-tk mercurial subversion
+        apt-get install -y ./python-caja-common_1.20.0-1_all.deb ./python-caja_1.20.0-1_amd64.deb ./rabbitvcs-cli_0.16-1.1_all.deb ./python-svn_1.9.5-1_amd64.deb ./rabbitvcs-core_0.16-1.1_all.deb python-tk mercurial subversion --allow-downgrades
     else
         apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
     fi
@@ -334,7 +334,7 @@ if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
   
   if [ "$ver" == "astra9" ]; then
     cd /tmp
-    wget -c http://security.debian.org/debian-security/pool/updates/main/i/icu/libicu57_57.1-6+deb9u5_amd64.deb
+    wget -c http://archive.debian.org/debian-security/pool/updates/main/i/icu/libicu57_57.1-6+deb9u5_amd64.deb
   
     apt-get install -y ./libicu57_57.1-6+deb9u5_amd64.deb
   fi
@@ -620,23 +620,21 @@ if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver
     apt-get install -y ubuntu-make
 fi
 if [ "$ver" == "astra10" ]; then
-    apt-key adv --keyserver keyserver.ubuntu.com --recv 43FDBC385ADA701F
-    echo "deb http://ppa.launchpad.net/lyzardking/ubuntu-make/ubuntu bionic main" | tee /etc/apt/sources.list.d/umake.list
-    apt-get update
-    apt-get install -y bash-completion
-    mkdir -p /etc/bash_completion.d/
-    apt-get install -y ubuntu-make
-    
     cd /tmp
+    wget -c http://security.debian.org/debian-security/pool/updates/main/s/snapd/snapd_2.37.4-1+deb10u2_amd64.deb
+    wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/libsnapd-glib1_1.45-1.1_amd64.deb
+    wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/gir1.2-snapd-1_1.45-1.1_amd64.deb
+
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-avr/gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/b/binutils-avr/binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/a/avr-libc/avr-libc_2.0.0+Atmel3.6.0-1_all.deb
-    apt-get install ./gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb ./avr-libc_2.0.0+Atmel3.6.0-1_all.deb
+    apt-get install -y ./snapd_2.37.4-1+deb10u2_amd64.deb ./libsnapd-glib1_1.45-1.1_amd64.deb ./gir1.2-snapd-1_1.45-1.1_amd64.deb
+    apt-get install -y  --allow-downgrades ./gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb ./avr-libc_2.0.0+Atmel3.6.0-1_all.deb
 fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[ "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y snapd
 
         systemctl unmask snapd.seeded snapd
@@ -649,10 +647,12 @@ if [ $is_docker == 0 ] ; then
         umake_path=/snap/bin/umake
 
         # need to use SDDM on Debian because of https://github.com/ubuntu/ubuntu-make/issues/678
-        apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
-        unset DEBIAN_FRONTEND
-        dpkg-reconfigure sddm
-        export DEBIAN_FRONTEND=noninteractive
+        if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+          apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
+          unset DEBIAN_FRONTEND
+          dpkg-reconfigure sddm
+          export DEBIAN_FRONTEND=noninteractive
+        fi
     fi
 fi
 
