@@ -575,7 +575,16 @@ else
 fi
 
 # PlayOnLinux
-apt-get install -y playonlinux
+dpkg --add-architecture i386
+apt-get update
+apt-get install -y wine32 || true
+if [[ "$ver" == "stretch" || "$ver" == "bionic" ]]; then
+  cd /tmp
+  wget -c https://www.playonlinux.com/script_files/PlayOnLinux/4.3.4/PlayOnLinux_4.3.4.deb -O PlayOnLinux_4.3.4.deb
+  apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb
+else
+  apt-get install -y playonlinux
+fi
 
 # Y PPA Manager
 apt-get install -y ppa-purge || true
