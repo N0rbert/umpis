@@ -488,7 +488,7 @@ else
   fi
 fi
 
-if [[ "$dpkg_arch" == "amd64" && "$ver" != "bookworm" ]]; then
+if [ "$dpkg_arch" == "amd64" ]; then
   if [ $is_docker == 0 ]; then
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
