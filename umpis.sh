@@ -151,6 +151,9 @@ if [ "$ver" != "astra10" ]; then
 else
     apt-get install -y wget
 fi
+if [ "$ver" != "astra9" ]; then # fix for https://bugs.debian.org/1029766 and https://bugs.debian.org/1033502
+    apt-get install -y python3-launchpadlib
+fi
 
 # Restricted extras
 apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras || true
@@ -700,11 +703,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
 
 	# VTE fix for LP#1922276 bug
 	apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-	if [ "$ver" == "bookworm" ]; then
-	  echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
-	else
-	  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
-	fi
+    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
 	apt-get update
     apt-get dist-upgrade -y
 fi
@@ -712,13 +711,7 @@ fi
 # fixes for Jammy and Bookworm (see LP#1947420)
 if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  
-  if [ "$ver" == "bookworm" ]; then
-    echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.list
-  else
-    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
-  fi
-
+  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
   apt-get update
   apt-get dist-upgrade -y
 fi
