@@ -343,6 +343,21 @@ if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
   fi
 fi
 
+if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'
+  echo "deb http://cloud.r-project.org/bin/linux/debian buster-cran35/" | tee /etc/apt/sources.list.d/r-cran.list
+
+  if [ "$ver" == "astra10" ]; then
+cat <<EOF > /etc/apt/preferences.d/pin-r-cran
+Package: *
+Pin: origin cloud.r-project.org
+Pin-Priority: 1337
+EOF
+  fi # /astra10
+
+  apt-get update
+fi
+
 if [ "$ver" == "bionic" ]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
   echo "deb http://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
@@ -425,10 +440,7 @@ fi
 
 apt-get install -y evince
 
-if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
-    r_ver="3.5"
-fi
-if [[ "$ver" == "focal" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="3.6"
 fi
 if [ "$ver" == "bullseye" ]; then
