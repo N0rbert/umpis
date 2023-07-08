@@ -648,14 +648,14 @@ if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver
 fi
 if [ "$ver" == "astra10" ]; then
     cd /tmp
-    wget -c http://security.debian.org/debian-security/pool/updates/main/s/snapd/snapd_2.37.4-1+deb10u2_amd64.deb
+    wget -c http://security.debian.org/debian-security/pool/updates/main/s/snapd/snapd_2.37.4-1+deb10u3_amd64.deb
     wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/libsnapd-glib1_1.45-1.1_amd64.deb
     wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/gir1.2-snapd-1_1.45-1.1_amd64.deb
 
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-avr/gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/b/binutils-avr/binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/a/avr-libc/avr-libc_2.0.0+Atmel3.6.0-1_all.deb
-    apt-get install -y ./snapd_2.37.4-1+deb10u2_amd64.deb ./libsnapd-glib1_1.45-1.1_amd64.deb ./gir1.2-snapd-1_1.45-1.1_amd64.deb
+    apt-get install -y ./snapd_2.37.4-1+deb10u3_amd64.deb ./libsnapd-glib1_1.45-1.1_amd64.deb ./gir1.2-snapd-1_1.45-1.1_amd64.deb
     apt-get install -y  --allow-downgrades ./gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb ./avr-libc_2.0.0+Atmel3.6.0-1_all.deb
 fi
 
