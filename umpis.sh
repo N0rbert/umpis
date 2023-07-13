@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE "bionic|focal|jammy|stretch|buster|bullseye|bookworm|orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE "bionic|focal|jammy|stretch|buster|bullseye|bookworm|trixie|orel|1.7_x86-64"; then
     if lsb_release -cs | grep -q "bionic"; then
         ver=bionic
     fi
@@ -22,6 +22,9 @@ if lsb_release -cs | grep -qE "bionic|focal|jammy|stretch|buster|bullseye|bookwo
     fi
     if lsb_release -cs | grep -q "bookworm"; then
         ver=bookworm
+    fi
+    if lsb_release -cs | grep -q "trixie"; then
+        ver=trixie
     fi
     if lsb_release -cs | grep -q "orel"; then
         ver=astra9
@@ -186,7 +189,7 @@ if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" 
     fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
   apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
 
   if [ $is_docker == 0 ]; then
@@ -263,7 +266,7 @@ if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
     fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -285,7 +288,7 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-    if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+    if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
         echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
         apt-get install -y virtualbox
       if [ $is_docker == 0 ]; then
@@ -320,7 +323,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi #/amd64
 
 # LibreOffice
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     add-apt-repository -y ppa:libreoffice/ppa
 fi
 apt-get update
@@ -369,7 +372,7 @@ apt-get install -y r-base-dev
 if [ "$dpkg_arch" == "amd64" ]; then
   cd /tmp
 
-  if [[ "$ver" == "jammy" || "$ver" == "bookworm" ]]; then
+  if [[ "$ver" == "jammy" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
@@ -428,7 +431,7 @@ fi
 # bookdown install for local user
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra10" ]]; then
     apt-get install -y libgit2-dev
 fi
 
@@ -449,7 +452,7 @@ fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [ "$ver" == "bookworm" ]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
     r_ver="4.2"
 fi
 if [ "$ver" == "bionic" ]; then
@@ -479,7 +482,7 @@ elif [ "$dpkg_arch" == "armhf" ]; then
     fi
 fi
 
-if [[ "$ver" == "jammy" || "$ver" == "bookworm" ]]; then
+if [[ "$ver" == "jammy" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
   if [ $is_docker == 0 ]; then
     sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
   else
@@ -604,14 +607,14 @@ fi
 # Y PPA Manager
 apt-get install -y ppa-purge || true
 
-if [[ "$ver" != "jammy" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     add-apt-repository -y ppa:webupd8team/y-ppa-manager
     apt-get update
     apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     if [ "$dpkg_arch" == "amd64" ]; then
         add-apt-repository -y ppa:atareao/telegram
         apt-get update
@@ -641,7 +644,7 @@ apt-get install -y flatpak
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Ubuntu Make
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
     add-apt-repository -y ppa:lyzardking/ubuntu-make
     apt-get update
     apt-get install -y ubuntu-make
@@ -661,7 +664,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
         apt-get install -y snapd
 
         systemctl unmask snapd.seeded snapd
@@ -674,7 +677,7 @@ if [ $is_docker == 0 ] ; then
         umake_path=/snap/bin/umake
 
         # need to use SDDM on Debian because of https://github.com/ubuntu/ubuntu-make/issues/678
-        if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+        if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
           apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
           unset DEBIAN_FRONTEND
           dpkg-reconfigure sddm
@@ -709,7 +712,7 @@ EOF
 fi
 
 # fixes for Bullseye, Bookworm and Jammy
-if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
     # Readline fix for LP#1926256 bug
     echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee ~/.inputrc
 
@@ -721,7 +724,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
 fi
 
 # fixes for Jammy and Bookworm (see LP#1947420)
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
   add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
   apt-get update
