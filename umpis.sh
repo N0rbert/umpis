@@ -54,7 +54,7 @@ then
     exit 3
 fi
 
-echo "Welcome to the Ubuntu MATE post-install script!"
+echo "Welcome to the Ubuntu MATE (and Debian) post-install script!"
 set -e
 set -x
 
@@ -151,6 +151,9 @@ if [ "$ver" != "astra10" ]; then
 else
     apt-get install -y wget
 fi
+if [ "$ver" != "astra9" ]; then # fix for https://bugs.debian.org/1029766 and https://bugs.debian.org/1033502
+    apt-get install -y python3-launchpadlib
+fi
 
 # Restricted extras
 apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras || true
@@ -168,7 +171,7 @@ if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" 
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/r/rabbitvcs/rabbitvcs-core_0.16-1.1_all.deb
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/python-caja/python-caja-common_1.20.0-1_all.deb
         wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/python-caja/python-caja_1.20.0-1_amd64.deb
-        apt-get install -y ./python-caja-common_1.20.0-1_all.deb ./python-caja_1.20.0-1_amd64.deb ./rabbitvcs-cli_0.16-1.1_all.deb ./python-svn_1.9.5-1_amd64.deb ./rabbitvcs-core_0.16-1.1_all.deb python-tk mercurial subversion
+        apt-get install -y ./python-caja-common_1.20.0-1_all.deb ./python-caja_1.20.0-1_amd64.deb ./rabbitvcs-cli_0.16-1.1_all.deb ./python-svn_1.9.5-1_amd64.deb ./rabbitvcs-core_0.16-1.1_all.deb python-tk mercurial subversion --allow-downgrades
     else
         apt-get install -y rabbitvcs-cli python-caja python-tk mercurial subversion
     fi
@@ -334,10 +337,25 @@ if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
   
   if [ "$ver" == "astra9" ]; then
     cd /tmp
-    wget -c http://security.debian.org/debian-security/pool/updates/main/i/icu/libicu57_57.1-6+deb9u5_amd64.deb
+    wget -c http://archive.debian.org/debian-security/pool/updates/main/i/icu/libicu57_57.1-6+deb9u5_amd64.deb
   
     apt-get install -y ./libicu57_57.1-6+deb9u5_amd64.deb
   fi
+fi
+
+if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'
+  echo "deb http://cloud.r-project.org/bin/linux/debian buster-cran35/" | tee /etc/apt/sources.list.d/r-cran.list
+
+  if [ "$ver" == "astra10" ]; then
+cat <<EOF > /etc/apt/preferences.d/pin-r-cran
+Package: *
+Pin: origin cloud.r-project.org
+Pin-Priority: 1337
+EOF
+  fi # /astra10
+
+  apt-get update
 fi
 
 if [ "$ver" == "bionic" ]; then
@@ -422,10 +440,7 @@ fi
 
 apt-get install -y evince
 
-if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
-    r_ver="3.5"
-fi
-if [[ "$ver" == "focal" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="3.6"
 fi
 if [ "$ver" == "bullseye" ]; then
@@ -434,8 +449,11 @@ fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [[ "$ver" == "bionic" || "$ver" == "bookworm" ]]; then
+if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
+fi
+if [ "$ver" == "bionic" ]; then
+    r_ver="4.3"
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
@@ -485,7 +503,7 @@ else
   fi
 fi
 
-if [[ "$dpkg_arch" == "amd64" && "$ver" != "bookworm" ]]; then
+if [ "$dpkg_arch" == "amd64" ]; then
   if [ $is_docker == 0 ]; then
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
@@ -572,7 +590,16 @@ else
 fi
 
 # PlayOnLinux
-apt-get install -y playonlinux
+dpkg --add-architecture i386
+apt-get update
+apt-get install -y wine32 || true
+if [[ "$ver" == "stretch" || "$ver" == "bionic" ]]; then
+  cd /tmp
+  wget -c https://www.playonlinux.com/script_files/PlayOnLinux/4.3.4/PlayOnLinux_4.3.4.deb -O PlayOnLinux_4.3.4.deb
+  apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb
+else
+  apt-get install -y playonlinux
+fi
 
 # Y PPA Manager
 apt-get install -y ppa-purge || true
@@ -609,11 +636,9 @@ if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
     add-apt-repository -y ppa:alexlarsson/flatpak
 fi
 
-if [ "$ver" != "astra9" ]; then
-    apt-get update
-    apt-get install -y flatpak
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-fi
+apt-get update
+apt-get install -y flatpak
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Ubuntu Make
 if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
@@ -622,34 +647,39 @@ if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver
     apt-get install -y ubuntu-make
 fi
 if [ "$ver" == "astra10" ]; then
-    apt-key adv --keyserver keyserver.ubuntu.com --recv 43FDBC385ADA701F
-    echo "deb http://ppa.launchpad.net/lyzardking/ubuntu-make/ubuntu bionic main" | tee /etc/apt/sources.list.d/umake.list
-    apt-get update
-    apt-get install -y bash-completion
-    mkdir -p /etc/bash_completion.d/
-    apt-get install -y ubuntu-make
-    
     cd /tmp
+    wget -c http://security.debian.org/debian-security/pool/updates/main/s/snapd/snapd_2.37.4-1+deb10u3_amd64.deb
+    wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/libsnapd-glib1_1.45-1.1_amd64.deb
+    wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/gir1.2-snapd-1_1.45-1.1_amd64.deb
+
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-avr/gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/b/binutils-avr/binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb
     wget -c http://archive.ubuntu.com/ubuntu/pool/universe/a/avr-libc/avr-libc_2.0.0+Atmel3.6.0-1_all.deb
-    apt-get install ./gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb ./avr-libc_2.0.0+Atmel3.6.0-1_all.deb
+    apt-get install -y ./snapd_2.37.4-1+deb10u3_amd64.deb ./libsnapd-glib1_1.45-1.1_amd64.deb ./gir1.2-snapd-1_1.45-1.1_amd64.deb
+    apt-get install -y  --allow-downgrades ./gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb ./avr-libc_2.0.0+Atmel3.6.0-1_all.deb
 fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[ "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "stretch" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y snapd
+
+        systemctl unmask snapd.seeded snapd
+        systemctl enable snapd.seeded snapd
+        systemctl start snapd.seeded snapd
+
         snap install ubuntu-make --classic --edge
         snap refresh ubuntu-make --classic --edge
 
         umake_path=/snap/bin/umake
 
         # need to use SDDM on Debian because of https://github.com/ubuntu/ubuntu-make/issues/678
-        apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
-        unset DEBIAN_FRONTEND
-        dpkg-reconfigure sddm
-        export DEBIAN_FRONTEND=noninteractive
+        if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+          apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
+          unset DEBIAN_FRONTEND
+          dpkg-reconfigure sddm
+          export DEBIAN_FRONTEND=noninteractive
+        fi
     fi
 fi
 
@@ -685,11 +715,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
 
 	# VTE fix for LP#1922276 bug
 	apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-	if [ "$ver" == "bookworm" ]; then
-	  echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
-	else
-	  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
-	fi
+    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
 	apt-get update
     apt-get dist-upgrade -y
 fi
@@ -697,13 +723,7 @@ fi
 # fixes for Jammy and Bookworm (see LP#1947420)
 if [[ "$ver" == "bookworm" || "$ver" == "jammy" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  
-  if [ "$ver" == "bookworm" ]; then
-    echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.list
-  else
-    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
-  fi
-
+  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
   apt-get update
   apt-get dist-upgrade -y
 fi
