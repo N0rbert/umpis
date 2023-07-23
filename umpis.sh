@@ -689,7 +689,11 @@ fi
 # fixes for Jammy
 if [ "$ver" == "jammy" ]; then
     # Readline fix for LP#1926256 bug
-    echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee ~/.inputrc
+    if [ $is_docker == 0 ]; then
+        echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
+    else
+	echo "set enable-bracketed-paste Off" | tee -a /etc/inputrc
+    fi
 
 cat <<\EOF > /etc/X11/Xsession.d/20x11-add-hasoption
 # temporary fix for LP# 1922414, 1955135 and 1955136 bugs
@@ -714,8 +718,11 @@ fi
 # fixes for Bullseye, Bookworm and Jammy
 if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
     # Readline fix for LP#1926256 bug
-    echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee ~/.inputrc
-
+    if [ $is_docker == 0 ]; then
+	echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
+    else
+	echo "set enable-bracketed-paste Off" | tee -a /etc/inputrc
+    fi
 	# VTE fix for LP#1922276 bug
 	apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
     add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
