@@ -452,10 +452,10 @@ fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
 fi
-if [ "$ver" == "bionic" ]; then
+if [[ "$ver" == "bionic" || "$ver" == "trixie" ]]; then
     r_ver="4.3"
 fi
 
