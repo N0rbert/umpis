@@ -319,6 +319,15 @@ if [ "$dpkg_arch" == "amd64" ]; then
         echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
         apt-get update
         apt-get install -y virtualbox-6.1
+        
+        # download and install extpack using the same method as in alpis.sh
+        mkdir -p /usr/lib/virtualbox/ExtensionPacks
+        vbox_version=$(VBoxManage -V | awk -Fr '{print $1}')
+        cd /tmp
+        wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
+        VBoxManage extpack cleanup
+        VBoxManage extpack install --replace "/tmp/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c
+
       if [ $is_docker == 0 ]; then
         usermod -a -G vboxusers "$SUDO_USER"
       fi
