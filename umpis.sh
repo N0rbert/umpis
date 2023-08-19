@@ -291,14 +291,14 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-    if [[ "$ver" != "xenial" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+    if [[ "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
         echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
         apt-get install -y virtualbox
       if [ $is_docker == 0 ]; then
         usermod -a -G vboxusers "$SUDO_USER"
       fi
     fi
-    if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" ]]; then
+    if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         if [ "$ver" == "xenial" ]; then
             apt-get install -y ca-certificates apt-transport-https
         else
