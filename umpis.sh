@@ -1,7 +1,10 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE "bionic|focal|jammy|stretch|buster|bullseye|bookworm|trixie|orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE "xenial|bionic|focal|jammy|stretch|buster|bullseye|bookworm|trixie|orel|1.7_x86-64"; then
+    if lsb_release -cs | grep -q "xenial"; then
+        ver=xenial
+    fi
     if lsb_release -cs | grep -q "bionic"; then
         ver=bionic
     fi
@@ -33,7 +36,7 @@ if lsb_release -cs | grep -qE "bionic|focal|jammy|stretch|buster|bullseye|bookwo
         ver=astra10
     fi
 else
-    echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 18.04 LTS, 20.04 LTS and 22.04 LTS are supported!"
+    echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 16.04 LTS, 18.04 LTS, 20.04 LTS and 22.04 LTS are supported!"
     exit 1
 fi
 
@@ -89,7 +92,7 @@ EOF
 sudo -EHu "$SUDO_USER" -- dconf load /org/mate/terminal/ < /tmp/dconf-mate-terminal
 
   ## window management keyboard shortcuts for Ubuntu MATE 18.04 LTS
-  if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra10" ]]; then
+  if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra10" ]]; then
     sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings unmaximize '<Mod4>Down'
     sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings maximize '<Mod4>Up'
     sudo -EHu "$SUDO_USER" -- gsettings set org.mate.Marco.window-keybindings tile-to-corner-ne '<Alt><Mod4>Right' || true
@@ -107,7 +110,7 @@ rm -v /var/lib/dpkg/lock* /var/cache/apt/archives/lock || true
 systemctl stop unattended-upgrades.service || true
 apt-get purge unattended-upgrades -y || true
 
-if [ "$ver" == "bionic" ]; then # removal is safe only for Ubuntu 18.04 LTS
+if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then # removal is safe only for Ubuntu 16.04 LTS and 18.04 LTS
     apt-get purge ubuntu-advantage-tools -y
 else # mask relevant services instead of removing the package on newer versions
     systemctl stop ua-messaging.timer || true
@@ -165,7 +168,7 @@ apt-get install -y ubuntu-restricted-addons ubuntu-restricted-extras || true
 apt-get install -y git
 
 # RabbitVCS integration to Caja
-if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     if [ "$ver" == "astra10" ]; then
         # download packages from 18.04 LTS
         cd /tmp
@@ -212,7 +215,7 @@ apt-get install -y inkscape
 apt-get install -y doublecmd-gtk
 
 # System tools
-if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" ]]; then
     apt-get install -y fslint
 elif [ "$ver" == "astra9" ]; then
     cd /tmp
@@ -288,15 +291,19 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-    if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+    if [[ "$ver" != "xenial" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
         echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
         apt-get install -y virtualbox
       if [ $is_docker == 0 ]; then
         usermod -a -G vboxusers "$SUDO_USER"
       fi
     fi
-    if [[ "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" ]]; then
-        apt-get install -y ca-certificates gpg apt-transport-https
+    if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" ]]; then
+        if [ "$ver" == "xenial" ]; then
+            apt-get install -y ca-certificates apt-transport-https
+        else
+            apt-get install -y ca-certificates gpg apt-transport-https
+        fi
         wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | apt-key add
 
         deb_ver="$ver"
@@ -361,9 +368,9 @@ EOF
   apt-get update
 fi
 
-if [ "$ver" == "bionic" ]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
-  echo "deb http://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
+  echo "deb http://cloud.r-project.org/bin/linux/ubuntu ${ver}-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
   apt-get update
 fi
 
@@ -376,13 +383,15 @@ if [ "$dpkg_arch" == "amd64" ]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
+  elif [ "$ver" == "xenial" ]; then
+    wget -c https://archive.org/download/rstudio-1.3.1093-amd64-xenial/rstudio-1.3.1093-amd64-xenial.deb -O rstudio-latest-amd64.deb || echo "Note: please put local deb-file of RStudio named 'rstudio-1.3.1093-amd64-xenial.deb' with MD5 51ca6c8e21e25fe8162c2de408571e79 to '/tmp/rstudio-latest-amd64.deb' and restart this script." 
   else
 	wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
 	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
   fi
   
-  apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
+  apt-get install -y --allow-downgrades --reinstall ./rstudio-latest-amd64.deb
 fi
 
 if [ $is_docker == 0 ]; then
@@ -431,6 +440,10 @@ fi
 # bookdown install for local user
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev
 
+if [ "$ver" == "xenial" ]; then
+    apt-get install -y libtool
+fi
+
 if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra10" ]]; then
     apt-get install -y libgit2-dev
 fi
@@ -455,7 +468,7 @@ fi
 if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
 fi
-if [[ "$ver" == "bionic" || "$ver" == "trixie" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "trixie" ]]; then
     r_ver="4.3"
 fi
 
@@ -546,6 +559,10 @@ else
     apt-get install --reinstall -y ttf-mscorefonts-installer
 fi
 
+if [ "$ver" == "xenial" ]; then
+    apt-get install -y texlive-generic-extra texlive-math-extra
+fi
+
 # ReText
 if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
     # download packages from 20.04 LTS to fix rendering
@@ -564,7 +581,8 @@ else
     apt-get install -y retext
 fi
 
-if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "focal" || "$ver" == "astra9" ]]; then
+
+if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "focal" || "$ver" == "astra9" ]]; then
 cat <<\EOF > /tmp/fenced_code.patch
 --- org	2021-04-24 18:00:50.029754001 +0300
 +++ new	2021-04-24 18:10:19.790492001 +0300
@@ -579,9 +597,16 @@ cat <<\EOF > /tmp/fenced_code.patch
  }?[ ]*\n                                # Optional closing }
 EOF
 
-apt-get install -y --reinstall python3-markdown
+if [ "$ver" == "xenial" ]; then # on Ubuntu 16.04 LTS use updated version from Debian 9
+  cd /tmp
+  wget -c http://archive.debian.org/debian/pool/main/p/python-markdown/python3-markdown_2.6.8-1_all.deb
+  apt-get install -y --allow-downgrades --reinstall ./python3-markdown_2.6.8-1_all.deb
+else
+  apt-get install -y --reinstall python3-markdown
+fi # /xenial
+
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
-fi # versions
+fi # /versions
 
 if [ $is_docker == 0 ]; then
   mkdir -p ~/.config
@@ -596,7 +621,10 @@ fi
 dpkg --add-architecture i386
 apt-get update
 apt-get install -y wine32 || true
-if [[ "$ver" == "stretch" || "$ver" == "bionic" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" ]]; then
+  if [ "$ver" == "xenial" ]; then
+    apt-get install -y wine:i386
+  fi
   cd /tmp
   wget -c https://www.playonlinux.com/script_files/PlayOnLinux/4.3.4/PlayOnLinux_4.3.4.deb -O PlayOnLinux_4.3.4.deb
   apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb
@@ -623,7 +651,7 @@ if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver
 fi
 
 # NotepadQQ
-if [ "$ver" == "bionic" ]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then
     add-apt-repository -y ppa:notepadqq-team/notepadqq
     apt-get update
     apt-get install -y notepadqq
@@ -635,7 +663,7 @@ apt-get install -y $(check-language-support -l en) $(check-language-support -l r
 apt-get install -y --reinstall --install-recommends task-russian task-russian-desktop || true
 
 # Flatpak
-if [[ "$ver" == "bionic" || "$ver" == "focal" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "focal" ]]; then
     add-apt-repository -y ppa:alexlarsson/flatpak
 fi
 
@@ -664,7 +692,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
     umake_path=umake
-    if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+    if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
         apt-get install -y snapd
 
         systemctl unmask snapd.seeded snapd
