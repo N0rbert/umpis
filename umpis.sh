@@ -636,9 +636,9 @@ if [[ "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" ]]; then
   fi
   cd /tmp
   wget -c https://www.playonlinux.com/script_files/PlayOnLinux/4.3.4/PlayOnLinux_4.3.4.deb -O PlayOnLinux_4.3.4.deb
-  apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb
+  apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb winetricks
 else
-  apt-get install -y playonlinux
+  apt-get install -y playonlinux winetricks
 fi
 
 # Y PPA Manager
