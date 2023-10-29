@@ -66,7 +66,7 @@ if [[ $is_docker == 0 && "$DESKTOP_SESSION" == "mate" ]]; then
 ## keyboard layouts, Alt+Shift for layout toggle
 sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd layouts "['us', 'ru']"
 sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd model "''"
-sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd options "['grp\tgrp:alt_shift_toggle', 'grp_led\tgrp_led:scroll']"
+sudo -EHu "$SUDO_USER" -- gsettings set org.mate.peripherals-keyboard-xkb.kbd options "['grp\tgrp:alt_shift_toggle']"
 
 ## terminal
 cat <<EOF > /tmp/dconf-mate-terminal
