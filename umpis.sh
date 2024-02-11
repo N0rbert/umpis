@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "mantic|noble" -e "orel|1.7_x86-64"; then
     if lsb_release -cs | grep -qE "xenial|sarah|serena|sonya|sylvia"; then
         ver=xenial
     fi
@@ -26,7 +26,7 @@ if lsb_release -cs | grep -qE -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|t
     if lsb_release -cs | grep -qE "bookworm|faye"; then
         ver=bookworm
     fi
-    if lsb_release -cs | grep -q "trixie"; then
+    if lsb_release -cs | grep -qE "trixie|mantic|noble"; then
         ver=trixie
     fi
     if lsb_release -cs | grep -q "orel"; then
@@ -36,7 +36,7 @@ if lsb_release -cs | grep -qE -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|t
         ver=astra10
     fi
 else
-    echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 16.04 LTS, 18.04 LTS, 20.04 LTS and 22.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3; LMDE 3, 4, 5 and 6 are supported!"
+    echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 23.10 and upcoming 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3; LMDE 3, 4, 5 and 6 are supported!"
     exit 1
 fi
 
@@ -762,7 +762,11 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
     fi
 	# VTE fix for LP#1922276 bug
 	apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+        if [[ "$(lsb_release -cs)" == "mantic" || "$(lsb_release -cs)" == "noble" ]]; then # workaround for https://pad.lv/2037210
+          ls /etc/apt/sources.list.d/nrbrtx-vte-ubuntu-jammy.list || echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/nrbrtx-vte-ubuntu-jammy.list 
+        else
+          add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+        fi
 	apt-get update
     apt-get dist-upgrade -y
 fi
@@ -770,7 +774,11 @@ fi
 # fixes for Jammy and Bookworm (see LP#1947420)
 if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
+  if [[ "$(lsb_release -cs)" == "mantic" || "$(lsb_release -cs)" == "noble" ]]; then # workaround for https://pad.lv/2037210
+    ls /etc/apt/sources.list.d/nrbrtx-wnck-ubuntu-jammy.list || echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/nrbrtx-wnck-ubuntu-jammy.list 
+  else
+    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
+  fi
   apt-get update
   apt-get dist-upgrade -y
 fi
