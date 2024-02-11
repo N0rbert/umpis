@@ -504,28 +504,19 @@ elif [ "$dpkg_arch" == "armhf" ]; then
     fi
 fi
 
-if [[ "$ver" == "jammy" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
-  if [ $is_docker == 0 ]; then
-    sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
-  else
-    R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
-  fi
+## install R-packages with specific versions for reproducibility
+bookdown_ver="0.37"
+knitr_ver="1.45"
+xaringan_ver="0.29"
+
+if [ $is_docker == 0 ]; then
+  sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '$bookdown_ver', repos = 'http://cran.r-project.org')"
+  sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '$knitr_ver', repos = 'http://cran.r-project.org')"
+  sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('xaringan', version = '$xaringan_ver', repos = 'http://cran.r-project.org/')"
 else
-  if [ $is_docker == 0 ]; then
-    ## FIXME on bookdown side, waiting for 0.23
-    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.r-project.org')"
-    ## FIXME for is_abs_path on knitr 1.34
-    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.r-project.org')"
-    ## Xaringan
-    sudo -u "$SUDO_USER" -- R -e "install.packages('xaringan', repos='http://cran.r-project.org/')"
-  else
-    ## FIXME on bookdown side, waiting for 0.23
-    R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.r-project.org')"
-    ## FIXME for is_abs_path on knitr 1.34
-    R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.r-project.org')"
-    ## Xaringan
-    R -e "install.packages('xaringan', repos='http://cran.r-project.org/')"
-  fi
+  R -e "require(devtools); install_version('bookdown', version = '$bookdown_ver', repos = 'http://cran.r-project.org')"
+  R -e "require(devtools); install_version('knitr', version = '$knitr_ver', repos = 'http://cran.r-project.org')"
+  R -e "require(devtools); install_version('xaringan', version = '$xaringan_ver', repos = 'http://cran.r-project.org/')"
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
