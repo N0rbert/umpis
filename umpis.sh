@@ -309,6 +309,15 @@ if [ "$dpkg_arch" == "amd64" ]; then
         echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
         apt-get update
         apt-get install -y virtualbox-6.1
+        
+        # download and install extpack using the same method as in alpis.sh
+        mkdir -p /usr/lib/virtualbox/ExtensionPacks
+        vbox_version=$(VBoxManage -V | awk -Fr '{print $1}')
+        cd /tmp
+        wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
+        VBoxManage extpack cleanup
+        VBoxManage extpack install --replace "/tmp/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c
+
       if [ $is_docker == 0 ]; then
         usermod -a -G vboxusers "$SUDO_USER"
       fi
@@ -379,7 +388,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 	|| wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
   fi
   
-  apt-get install -y --allow-downgrades ./rstudio-latest-amd64.deb
+  apt-get install -y --allow-downgrades --reinstall ./rstudio-latest-amd64.deb
 fi
 
 if [ $is_docker == 0 ]; then
@@ -479,28 +488,19 @@ elif [ "$dpkg_arch" == "armhf" ]; then
     fi
 fi
 
-if [[ "$ver" == "jammy" || "$ver" == "bookworm" ]]; then
-  if [ $is_docker == 0 ]; then
-    sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
-  else
-    R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/')"
-  fi
+## install R-packages with specific versions for reproducibility
+bookdown_ver="0.37"
+knitr_ver="1.45"
+xaringan_ver="0.29"
+
+if [ $is_docker == 0 ]; then
+  sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '$bookdown_ver', repos = 'http://cran.r-project.org')"
+  sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '$knitr_ver', repos = 'http://cran.r-project.org')"
+  sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('xaringan', version = '$xaringan_ver', repos = 'http://cran.r-project.org/')"
 else
-  if [ $is_docker == 0 ]; then
-    ## FIXME on bookdown side, waiting for 0.23
-    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.r-project.org')"
-    ## FIXME for is_abs_path on knitr 1.34
-    sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.r-project.org')"
-    ## Xaringan
-    sudo -u "$SUDO_USER" -- R -e "install.packages('xaringan', repos='http://cran.r-project.org/')"
-  else
-    ## FIXME on bookdown side, waiting for 0.23
-    R -e "require(devtools); install_version('bookdown', version = '0.21', repos = 'http://cran.r-project.org')"
-    ## FIXME for is_abs_path on knitr 1.34
-    R -e "require(devtools); install_version('knitr', version = '1.33', repos = 'http://cran.r-project.org')"
-    ## Xaringan
-    R -e "install.packages('xaringan', repos='http://cran.r-project.org/')"
-  fi
+  R -e "require(devtools); install_version('bookdown', version = '$bookdown_ver', repos = 'http://cran.r-project.org')"
+  R -e "require(devtools); install_version('knitr', version = '$knitr_ver', repos = 'http://cran.r-project.org')"
+  R -e "require(devtools); install_version('xaringan', version = '$xaringan_ver', repos = 'http://cran.r-project.org/')"
 fi
 
 if [ "$dpkg_arch" == "amd64" ]; then
@@ -578,7 +578,7 @@ EOF
 
 apt-get install -y --reinstall python3-markdown
 patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --force < /tmp/fenced_code.patch
-fi # versions
+fi # /versions
 
 if [ $is_docker == 0 ]; then
   mkdir -p ~/.config
