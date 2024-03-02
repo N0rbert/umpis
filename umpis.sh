@@ -285,14 +285,14 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-    if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+    if [[ "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
         echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
         apt-get install -y virtualbox
       if [ $is_docker == 0 ]; then
         usermod -a -G vboxusers "$SUDO_USER"
       fi
     fi
-    if [[ "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" ]]; then
+    if [[ "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
         apt-get install -y ca-certificates gpg apt-transport-https
         wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | apt-key add
 
