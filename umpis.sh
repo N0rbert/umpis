@@ -333,6 +333,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
       fi
     else
       apt-get install -y virtualbox || true
+      echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
       apt-get install -y virtualbox-ext-pack || true
       apt-get install -y virtualbox-guest-additions-iso || true
     fi
@@ -715,14 +716,7 @@ if [ $is_docker == 0 ] ; then
 fi
 
 # fixes for Jammy
-if [ "$ver" == "jammy" ]; then
-    # Readline fix for LP#1926256 bug
-    if [ $is_docker == 0 ]; then
-        echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
-    else
-	echo "set enable-bracketed-paste Off" | tee -a /etc/inputrc
-    fi
-
+if [[ "$ver" == "jammy" || "$(lsb_release -cs)" == "mantic" || "$(lsb_release -cs)" == "noble" ]]; then
 cat <<\EOF > /etc/X11/Xsession.d/20x11-add-hasoption
 # temporary fix for LP# 1922414, 1955135 and 1955136 bugs
 # read OPTIONFILE
@@ -737,13 +731,9 @@ $1}" != "$OPTIONS" ]; then
   fi
 }
 EOF
-
-    # VTE fix for LP#1922276 bug
-    add-apt-repository -y ppa:nrbrtx/vte
-    apt-get dist-upgrade -y
 fi
 
-# fixes for Bullseye, Bookworm and Jammy
+# fixes for Bullseye, Bookworm, Trixie, Jammy, Mantic and Noble
 if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
     # Readline fix for LP#1926256 bug
     if [ $is_docker == 0 ]; then
