@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "mantic|noble" -e "orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "noble" -e "orel|1.7_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -17,6 +17,9 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "jammy|vanessa|vera|victoria|virginia"; then
     ver=jammy
   fi
+  if lsb_release -cs | grep -q "noble"; then
+    ver=noble
+  fi
   if lsb_release -cs | grep -qE "stretch|cindy"; then
     ver=stretch
   fi
@@ -29,7 +32,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "bookworm|faye"; then
     ver=bookworm
   fi
-  if lsb_release -cs | grep -qE "trixie|mantic|noble"; then
+  if lsb_release -cs | grep -qE "trixie"; then
     ver=trixie
   fi
   if lsb_release -cs | grep -q "orel"; then
@@ -39,7 +42,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra10
   fi
 else
-  echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 23.10 and upcoming 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3; LMDE 3, 4, 5 and 6 are supported!"
+  echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and upcoming 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3; LMDE 3, 4, 5 and 6 are supported!"
   exit 1
 fi
 
@@ -203,7 +206,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
   apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
 
   if [ $is_docker == 0 ]; then
@@ -280,7 +283,7 @@ if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
   fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -429,7 +432,7 @@ apt-get install -y r-base-dev
 if [ "$dpkg_arch" == "amd64" ]; then
   cd /tmp
 
-  if [[ "$ver" == "jammy" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+  if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
@@ -507,7 +510,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra10" ]]; then
   apt-get install -y libgit2-dev
 fi
 
@@ -531,7 +534,7 @@ fi
 if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
 fi
-if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "trixie" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "trixie" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
 
@@ -709,17 +712,17 @@ else
   apt-get install -y playonlinux winetricks
 fi
 
-# Y PPA Manager
-apt-get install -y ppa-purge || true
+# Y PPA Manager, install gawk to prevent LP#2036761
+apt-get install -y ppa-purge gawk || true
 
-if [[ "$ver" != "jammy" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
   add-apt-repository -y ppa:webupd8team/y-ppa-manager
   apt-get update
   apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "trusty" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
   if [ "$dpkg_arch" == "amd64" ]; then
     add-apt-repository -y ppa:atareao/telegram
     apt-get update
@@ -751,7 +754,7 @@ if [ "$ver" != "trusty" ]; then
 fi
 
 # Ubuntu Make
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "noble" ]]; then
   add-apt-repository -y ppa:lyzardking/ubuntu-make
   apt-get update
   apt-get install -y ubuntu-make
@@ -775,7 +778,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
   umake_path=umake
-  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "noble" ]]; then
     apt-get install -y snapd
 
     systemctl unmask snapd.seeded snapd
@@ -798,7 +801,7 @@ if [ $is_docker == 0 ] ; then
 fi
 
 # fixes for Jammy
-if [[ "$ver" == "jammy" || "$(lsb_release -cs)" == "mantic" || "$(lsb_release -cs)" == "noble" ]]; then
+if [[ "$ver" == "jammy" || "$ver" == "noble" ]]; then
 cat <<\EOF > /etc/X11/Xsession.d/20x11-add-hasoption
 # temporary fix for LP# 1922414, 1955135 and 1955136 bugs
 # read OPTIONFILE
@@ -815,8 +818,8 @@ $1}" != "$OPTIONS" ]; then
 EOF
 fi
 
-# fixes for Bullseye, Bookworm, Trixie, Jammy, Mantic and Noble
-if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
+# fixes for Bullseye, Bookworm, Trixie, Jammy and Noble
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
   # Readline fix for LP#1926256 bug
   if [ $is_docker == 0 ]; then
     echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
@@ -825,23 +828,15 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
   fi
   # VTE fix for LP#1922276 bug
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  if [[ "$(lsb_release -cs)" == "mantic" || "$(lsb_release -cs)" == "noble" ]]; then # workaround for https://pad.lv/2037210
-    ls /etc/apt/sources.list.d/nrbrtx-vte-ubuntu-jammy.list || echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/nrbrtx-vte-ubuntu-jammy.list 
-  else
-    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
-  fi
+  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
   apt-get update
   apt-get dist-upgrade -y
 fi
 
-# fixes for Jammy and Bookworm (see LP#1947420)
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" ]]; then
+# fixes for Bookworm, Jammy and Noble (see LP#1947420)
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  if [[ "$(lsb_release -cs)" == "mantic" || "$(lsb_release -cs)" == "noble" ]]; then # workaround for https://pad.lv/2037210
-    ls /etc/apt/sources.list.d/nrbrtx-wnck-ubuntu-jammy.list || echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/nrbrtx-wnck-ubuntu-jammy.list 
-  else
-    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
-  fi
+  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
   apt-get update
   apt-get dist-upgrade -y
 fi
