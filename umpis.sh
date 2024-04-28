@@ -356,7 +356,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 
     # download and install extpack using the same method as in alpis.sh
     mkdir -p /usr/lib/virtualbox/ExtensionPacks
-    vbox_version=$(VBoxManage -V | awk -Fr '{print $1}')
+    vbox_version=$(VBoxManage -V | tail -n1 | awk -Fr '{print $1}')
     cd /tmp
     wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
     VBoxManage extpack cleanup
@@ -425,6 +425,18 @@ if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
   echo "deb http://cloud.r-project.org/bin/linux/ubuntu ${ver}-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
   apt-get update
+  
+  if [ "$ver" == "xenial" ]; then
+cat <<EOF > /etc/apt/preferences.d/pin-r43
+Package: r-*
+Pin: version 4.3.*
+Pin-Priority: 1337
+
+Package: r-*
+Pin: version 4.4.*
+Pin-Priority: -10
+EOF
+  fi
 fi
 
 apt-get install -y r-base-dev
@@ -534,8 +546,11 @@ fi
 if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
 fi
-if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "trixie" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "trixie" || "$ver" == "noble" ]]; then
     r_ver="4.3"
+fi
+if [ "$ver" == "bionic" ]; then
+    r_ver="4.4"
 fi
 
 if [ "$ver" == "trusty" ]; then
@@ -545,7 +560,7 @@ if [ "$ver" == "trusty" ]; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
       sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
-      R -e "install.packages(c('bookdown', 'knitr', 'xaringan'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      R -e "install.packages(c('bookdown', 'knitr', 'xaringan'), repos='http://cran.r-project.org/')"
     fi
   fi
 else
