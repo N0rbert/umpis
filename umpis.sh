@@ -42,7 +42,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra10
   fi
 else
-  echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and upcoming 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3; LMDE 3, 4, 5 and 6 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12 and upcoming 13; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2 and 21.3; LMDE 3, 4, 5 and 6 are supported!"
   exit 1
 fi
 
@@ -848,7 +848,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
   apt-get dist-upgrade -y
 fi
 
-# fixes for Bookworm, Jammy and Noble (see LP#1947420)
+# fixes for Bookworm, Trixie, Jammy and Noble (see LP#1947420)
 if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
   add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
