@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "noble" -e "orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "noble|wilma" -e "orel|1.7_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -17,7 +17,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "jammy|vanessa|vera|victoria|virginia"; then
     ver=jammy
   fi
-  if lsb_release -cs | grep -q "noble"; then
+  if lsb_release -cs | grep -qE "noble|wilma"; then
     ver=noble
   fi
   if lsb_release -cs | grep -qE "stretch|cindy"; then
@@ -42,7 +42,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra10
   fi
 else
-  echo "Currently only Debian 9, 10, 11, 12 and upcoming 13; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2 and 21.3; LMDE 3, 4, 5 and 6 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12 and upcoming 13; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3 and upcoming 22; LMDE 3, 4, 5 and 6 are supported!"
   exit 1
 fi
 
@@ -245,6 +245,9 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
 else
   apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
 fi
+
+[ ! -e "/var/lib/synaptic/preferences" ] && mkdir -p /var/lib/synaptic/ && touch /var/lib/synaptic/preferences
+ln -sfv /var/lib/synaptic/preferences /etc/apt/preferences.d/synaptic
 
 update-apt-xapian-index
 apt-file update
@@ -546,10 +549,10 @@ fi
 if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
 fi
-if [[ "$ver" == "xenial" || "$ver" == "trixie" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [ "$ver" == "bionic" ]; then
+if [[ "$ver" == "bionic" || "$ver" == "trixie" ]]; then
     r_ver="4.4"
 fi
 
@@ -841,11 +844,14 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
   else
     echo "set enable-bracketed-paste Off" | tee -a /etc/inputrc
   fi
+
   # VTE fix for LP#1922276 bug
-  apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
-  apt-get update
-  apt-get dist-upgrade -y
+  if [ "$ver" != "noble" ]; then
+    apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
+    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+    apt-get update
+    apt-get dist-upgrade -y
+  fi
 fi
 
 # fixes for Bookworm, Trixie, Jammy and Noble (see LP#1947420)
