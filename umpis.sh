@@ -387,7 +387,7 @@ apt-get install -f -y
 apt-get dist-upgrade -y
 
 if [ "$ver" == "trusty" ]; then
-  apt-get install --reinstall ure
+  apt-get install --reinstall -y ure
 fi
 
 # RStudio
@@ -406,7 +406,7 @@ fi
 
 if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'
-  echo "deb http://cloud.r-project.org/bin/linux/debian buster-cran35/" | tee /etc/apt/sources.list.d/r-cran.list
+  echo "deb http://cloud.r-project.org/bin/linux/debian buster-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
 
   if [ "$ver" == "astra10" ]; then
 cat <<EOF > /etc/apt/preferences.d/pin-r-cran
@@ -424,7 +424,7 @@ if [ "$ver" == "trusty" ]; then
   apt-get update
 fi
 
-if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "focal" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
   echo "deb http://cloud.r-project.org/bin/linux/ubuntu ${ver}-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
   apt-get update
@@ -537,7 +537,7 @@ fi
 
 apt-get install -y evince
 
-if [[ "$ver" == "trusty" || "$ver" == "focal" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     r_ver="3.6"
 fi
 if [ "$ver" == "bullseye" ]; then
@@ -552,18 +552,27 @@ fi
 if [[ "$ver" == "xenial" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [[ "$ver" == "bionic" || "$ver" == "trixie" ]]; then
+if [[ "$ver" == "bionic" || "$ver" == "focal" || "$ver" == "trixie" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
 
-if [ "$ver" == "trusty" ]; then
-  ## installation of 'devtools' is not possible on 'trusty', so let's try to install latest versions
+## Use R-packages with specific versions for reproducibility
+bookdown_ver="0.37"
+knitr_ver="1.45"
+xaringan_ver="0.29"
+
+if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
+  ## installation of 'devtools' is difficult with R 3.6, so let's try to install fixed versions
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown','knitr','xaringan'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
-      R -e "install.packages(c('bookdown', 'knitr', 'xaringan'), repos='http://cran.r-project.org/')"
+      R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source')"
+      R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source')"
+      R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source')"
     fi
   fi
 else
@@ -590,11 +599,6 @@ else
       R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
   fi
-
-  ## install R-packages with specific versions for reproducibility
-  bookdown_ver="0.37"
-  knitr_ver="1.45"
-  xaringan_ver="0.29"
 
   if [ $is_docker == 0 ]; then
     sudo -u "$SUDO_USER" -- R -e "require(devtools); install_version('bookdown', version = '$bookdown_ver', repos = 'http://cran.r-project.org')"
