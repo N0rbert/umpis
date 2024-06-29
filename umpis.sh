@@ -426,7 +426,7 @@ if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "focal" ]]; then
   echo "deb http://cloud.r-project.org/bin/linux/ubuntu ${ver}-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
   apt-get update
   
-  if [ "$ver" == "xenial" ]; then
+  if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then
 cat <<EOF > /etc/apt/preferences.d/pin-r43
 Package: r-*
 Pin: version 4.3.*
@@ -546,10 +546,10 @@ fi
 if [ "$ver" == "bookworm" ]; then
     r_ver="4.2"
 fi
-if [[ "$ver" == "xenial" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [[ "$ver" == "bionic" || "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
 
@@ -563,9 +563,9 @@ if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
-      R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
-      R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
-      R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
       R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source')"
       R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source')"
