@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "noble|wilma" -e "orel|1.7_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie" -e "noble|wilma" -e "orel|1.7_x86-64|1.8_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -41,8 +41,11 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -q "1.7_x86-64"; then
     ver=astra10
   fi
+  if lsb_release -cs | grep -q "1.8_x86-64"; then
+    ver=astra12
+  fi
 else
-  echo "Currently only Debian 9, 10, 11, 12 and upcoming 13; AstraLinux 2.12 and 1.7; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3 and 22; LMDE 3, 4, 5 and 6 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12 and upcoming 13; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3 and 22; LMDE 3, 4, 5 and 6 are supported!"
   exit 1
 fi
 
@@ -206,8 +209,19 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
-  apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
+  if [ "$ver" == "astra12" ]; then
+    cd /tmp
+    wget -c http://deb.debian.org/debian/pool/main/p/pysvn/python3-svn_1.9.15-1+b3_amd64.deb
+    wget -c http://deb.debian.org/debian/pool/main/r/rabbitvcs/rabbitvcs-cli_0.18-6_all.deb
+    wget -c http://deb.debian.org/debian/pool/main/r/rabbitvcs/rabbitvcs-core_0.18-6_all.deb
+    wget -c http://deb.debian.org/debian/pool/main/p/python-caja/python-caja-common_1.26.0-1_all.deb
+    wget -c http://deb.debian.org/debian/pool/main/p/python-caja/python3-caja_1.26.0-1+b2_amd64.deb
+    apt-get install -y --allow-downgrades ./python3-svn_1.9.15-1+b3_amd64.deb ./python-caja-common_1.26.0-1_all.deb ./python3-caja_1.26.0-1+b2_amd64.deb ./rabbitvcs-core_0.18-6_all.deb ./rabbitvcs-cli_0.18-6_all.deb
+    apt-get install -y python3-tk git mercurial subversion
+  else
+    apt-get install -y rabbitvcs-cli python3-caja python3-tk git mercurial subversion
+  fi
 
   if [ $is_docker == 0 ]; then
     sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/caja-python/extensions
@@ -237,11 +251,16 @@ elif [ "$ver" == "astra9" ]; then
   apt-get install -y ./fslint_2.46-1_all.deb
 fi
 
-if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
   apt-get install -y htop mc ncdu aptitude synaptic apt-file
   cd /tmp
-  wget -c http://deb.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.49_all.deb
-  apt-get install -y ./apt-xapian-index_0.49_all.deb
+  if [ "$ver" == "astra12" ]; then
+    wget -c http://deb.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.53_all.deb
+    apt-get install -y ./apt-xapian-index_0.53_all.deb
+  else
+    wget -c http://deb.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.49_all.deb
+    apt-get install -y ./apt-xapian-index_0.49_all.deb
+  fi
 else
   apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
 fi
@@ -286,7 +305,7 @@ if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
   fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -317,14 +336,14 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
     echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
     apt-get install -y virtualbox
     if [ $is_docker == 0 ]; then
       usermod -a -G vboxusers "$SUDO_USER"
     fi
   fi
-  if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+  if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
     if [ "$ver" == "xenial" ]; then
       apt-get install -y ca-certificates apt-transport-https
     else
@@ -334,9 +353,9 @@ if [ "$dpkg_arch" == "amd64" ]; then
         apt-get install -y ca-certificates gpg apt-transport-https
       fi
     fi
-        
+
     if [ "$ver" == "trusty" ]; then
-      wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O /tmp/vbox.key 
+      wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O /tmp/vbox.key
       apt-key add /tmp/vbox.key
       apt-key adv --keyserver keyserver.ubuntu.com --recv-key 54422A4B98AB5139
     else
@@ -351,6 +370,9 @@ if [ "$dpkg_arch" == "amd64" ]; then
       cd /tmp
       wget -c http://deb.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb
       apt-get install -y ./libvpx5_1.7.0-3+deb10u1_amd64.deb
+    elif [ "$ver" == "astra12" ]; then
+      deb_ver=bookworm
+      apt-get install -y linux-headers-all
     fi
 
     echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
@@ -377,7 +399,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi #/amd64
 
 # LibreOffice
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:libreoffice/ppa
 fi
 apt-get update
@@ -395,11 +417,11 @@ if [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'
   echo "deb http://cloud.r-project.org/bin/linux/debian stretch-cran35/" | tee /etc/apt/sources.list.d/r-cran.list
   apt-get update
-  
+
   if [ "$ver" == "astra9" ]; then
     cd /tmp
     wget -c http://archive.debian.org/debian-security/pool/updates/main/i/icu/libicu57_57.1-6+deb9u5_amd64.deb
-  
+
     apt-get install -y ./libicu57_57.1-6+deb9u5_amd64.deb
   fi
 fi
@@ -428,7 +450,7 @@ if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "focal" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv-key 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
   echo "deb http://cloud.r-project.org/bin/linux/ubuntu ${ver}-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
   apt-get update
-  
+
   if [[ "$ver" == "xenial" || "$ver" == "bionic" ]]; then
 cat <<EOF > /etc/apt/preferences.d/pin-r43
 Package: r-*
@@ -447,7 +469,7 @@ apt-get install -y r-base-dev
 if [ "$dpkg_arch" == "amd64" ]; then
   cd /tmp
 
-  if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+  if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
@@ -455,12 +477,14 @@ if [ "$dpkg_arch" == "amd64" ]; then
     wget -c https://archive.org/download/rstudio-1.3.1093-amd64-xenial/rstudio-1.3.1093-amd64-xenial.deb -O rstudio-latest-amd64.deb || echo "Note: please put local deb-file of RStudio named 'rstudio-1.3.1093-amd64-xenial.deb' with MD5 51ca6c8e21e25fe8162c2de408571e79 to '/tmp/rstudio-latest-amd64.deb' and restart this script."
   elif [ "$ver" == "trusty" ]; then
     wget -c https://download1.rstudio.org/desktop/trusty/amd64/rstudio-1.2.5042-amd64.deb -O rstudio-latest-amd64.deb
+  elif [ "$ver" == "astra12" ]; then
+    wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2023.03.2-454-amd64.deb -O rstudio-latest-amd64.deb
   else
     wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
     || wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
     || wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.4.1717-amd64.deb -O rstudio-latest-amd64.deb
   fi
-  
+
   if [ "$ver" == "trusty" ]; then
     apt-get install -y libclang-dev libxkbcommon-x11-0
     dpkg -i ./rstudio-latest-amd64.deb
@@ -535,7 +559,9 @@ if [ "$ver" == "astra10" ]; then
   apt-get update
 fi
 
-apt-get install -y evince
+if [ "$ver" != "astra12" ]; then
+  apt-get install -y evince
+fi
 
 if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     r_ver="3.6"
@@ -546,7 +572,7 @@ fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
-if [ "$ver" == "bookworm" ]; then
+if [[ "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
     r_ver="4.2"
 fi
 if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "noble" ]]; then
@@ -634,7 +660,7 @@ fi
 # TexLive and fonts
 echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | /usr/bin/debconf-set-selections
 
-if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
   if [ "$ver" == "astra9" ]; then
     apt-get install -y texlive-luatex texlive-generic-recommended
   fi
@@ -660,7 +686,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
 fi
 
 # ReText
-if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
   # download packages from 20.04 LTS to fix rendering
   cd /tmp
 
@@ -670,9 +696,15 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" ]]; then
     apt-get install --reinstall -y ./python3-markdown_3.1.1-3_all.deb ./python3-mdx-math_0.6-1_all.deb
   fi
 
-  wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pymarkups/python3-markups_3.0.0-1_all.deb
-  wget -c http://archive.ubuntu.com/ubuntu/pool/universe/r/retext/retext_7.1.0-1_all.deb
-  apt-get install -y ./python3-markups_3.0.0-1_all.deb ./retext_7.1.0-1_all.deb
+  if [ "$ver" == "astra12" ]; then
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pymarkups/python3-markups_3.1.3-2_all.deb
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/r/retext/retext_7.2.3-1_all.deb
+    apt-get install -y ./python3-markups_3.1.3-2_all.deb ./retext_7.2.3-1_all.deb
+  else
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/p/pymarkups/python3-markups_3.0.0-1_all.deb
+    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/r/retext/retext_7.1.0-1_all.deb
+    apt-get install -y ./python3-markups_3.0.0-1_all.deb ./retext_7.1.0-1_all.deb
+  fi
 else
   apt-get install -y retext
 fi
@@ -737,14 +769,14 @@ fi
 # Y PPA Manager, install gawk to prevent LP#2036761
 apt-get install -y ppa-purge gawk || true
 
-if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:webupd8team/y-ppa-manager
   apt-get update
   apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" ]]; then
+if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   if [ "$dpkg_arch" == "amd64" ]; then
     add-apt-repository -y ppa:atareao/telegram
     apt-get update
@@ -776,7 +808,7 @@ if [ "$ver" != "trusty" ]; then
 fi
 
 # Ubuntu Make
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:lyzardking/ubuntu-make
   apt-get update
   apt-get install -y ubuntu-make
@@ -797,10 +829,20 @@ if [ "$ver" == "astra10" ]; then
     apt-get install -y --allow-downgrades ./gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb ./avr-libc_2.0.0+Atmel3.6.0-1_all.deb
   fi
 fi
+if [ "$ver" == "astra12" ]; then
+  cd /tmp
+  wget -c http://deb.debian.org/debian/pool/main/s/snapd/snapd_2.57.6-1+b5_amd64.deb
+  apt-get install -y ./snapd_2.57.6-1+b5_amd64.deb
+
+  wget -c http://deb.debian.org/debian/pool/main/g/gcc-avr/gcc-avr_5.4.0+Atmel3.6.2-3_amd64.deb
+  wget -c http://deb.debian.org/debian/pool/main/b/binutils-avr/binutils-avr_2.26.20160125+Atmel3.6.2-4_amd64.deb
+  wget -c http://deb.debian.org/debian/pool/main/a/avr-libc/avr-libc_2.0.0+Atmel3.6.2-3_all.deb
+  apt-get install -y --allow-downgrades ./gcc-avr_5.4.0+Atmel3.6.2-3_amd64.deb ./binutils-avr_2.26.20160125+Atmel3.6.2-4_amd64.deb ./avr-libc_2.0.0+Atmel3.6.2-3_all.deb
+fi
 
 if [ $is_docker == 0 ] ; then
   umake_path=umake
-  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
     apt-get install -y snapd
 
     systemctl unmask snapd.seeded snapd
@@ -841,7 +883,7 @@ EOF
 fi
 
 # fixes for Bullseye, Bookworm, Trixie, Jammy and Noble
-if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   # Readline fix for LP#1926256 bug
   if [ $is_docker == 0 ]; then
     echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
@@ -852,16 +894,34 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
   # VTE fix for LP#1922276 bug
   if [ "$ver" != "noble" ]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+    if [ "$ver" == "astra12" ]; then
+      echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
+      cat <<EOF > /etc/apt/preferences.d/pin-lp-nrbrtx-vte
+Package: *vte*
+Pin: release o=LP-PPA-nrbrtx-vte
+Pin-Priority: 1337
+EOF
+    else
+      add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main"
+    fi
     apt-get update
     apt-get dist-upgrade -y
   fi
 fi
 
 # fixes for Bookworm, Trixie, Jammy and Noble (see LP#1947420)
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
-  add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
+  if [ "$ver" == "astra12" ]; then
+    echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.list
+      cat <<EOF > /etc/apt/preferences.d/pin-lp-nrbrtx-wnck
+Package: *wnck*
+Pin: release o=LP-PPA-nrbrtx-wnck
+Pin-Priority: 1337
+EOF
+  else
+    add-apt-repository -y "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main"
+  fi
   apt-get update
   apt-get dist-upgrade -y
 fi
