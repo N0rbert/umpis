@@ -161,7 +161,7 @@ apt-get install -f -y
 dpkg --configure -a
 
 # add-apt-repository, wget
-if [ "$ver" != "astra10" ]; then
+if [[ "$ver" != "astra10" && "$ver" != "trixie" ]]; then
   apt-get install -y software-properties-common wget
 else
   apt-get install -y wget
@@ -892,7 +892,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
   fi
 
   # VTE fix for LP#1922276 bug
-  if [ "$ver" != "noble" ]; then
+  if [[ "$ver" != "noble" && "$ver" != "trixie" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
     if [ "$ver" == "astra12" ]; then
       echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
@@ -909,8 +909,8 @@ EOF
   fi
 fi
 
-# fixes for Bookworm, Trixie, Jammy and Noble (see LP#1947420)
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+# fixes for Bookworm, Jammy and Noble (see LP#1947420)
+if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
   if [ "$ver" == "astra12" ]; then
     echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.list
