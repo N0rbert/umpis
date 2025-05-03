@@ -469,16 +469,18 @@ apt-get install -y r-base-dev
 if [ "$dpkg_arch" == "amd64" ]; then
   cd /tmp
 
-  if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
+  elif [ "$ver" == "focal" ]; then
+    wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/focal/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
+  elif [ "$ver" == "trixie" ]; then
+    wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
   elif [ "$ver" == "xenial" ]; then
     wget -c https://archive.org/download/rstudio-1.3.1093-amd64-xenial/rstudio-1.3.1093-amd64-xenial.deb -O rstudio-latest-amd64.deb || echo "Note: please put local deb-file of RStudio named 'rstudio-1.3.1093-amd64-xenial.deb' with MD5 51ca6c8e21e25fe8162c2de408571e79 to '/tmp/rstudio-latest-amd64.deb' and restart this script."
   elif [ "$ver" == "trusty" ]; then
     wget -c https://download1.rstudio.org/desktop/trusty/amd64/rstudio-1.2.5042-amd64.deb -O rstudio-latest-amd64.deb
-  elif [ "$ver" == "astra12" ]; then
-    wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2023.03.2-454-amd64.deb -O rstudio-latest-amd64.deb
   else
     wget -c https://download1.rstudio.org/desktop/bionic/amd64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb \
     || wget -c https://rstudio.org/download/latest/stable/desktop/bionic/rstudio-latest-amd64.deb -O rstudio-latest-amd64.deb \
@@ -578,10 +580,10 @@ fi
 if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [[ "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
-if [ "$ver" == "trixie" ]; then
+if [[ "$ver" == "focal" || "$ver" == "trixie" ]]; then
     r_ver="4.5"
 fi
 
@@ -590,8 +592,8 @@ bookdown_ver="0.37"
 knitr_ver="1.45"
 xaringan_ver="0.29"
 
-if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
-  ## installation of 'devtools' is difficult with R 3.6, so let's try to install fixed versions
+if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" ]]; then
+  ## installation of 'devtools' is difficult with R 3.6 and R 4.3 (for xenial and bionic), so let's try to install fixed versions
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
