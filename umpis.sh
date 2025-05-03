@@ -578,8 +578,11 @@ fi
 if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [[ "$ver" == "focal" || "$ver" == "trixie" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
+fi
+if [ "$ver" == "trixie" ]; then
+    r_ver="4.5"
 fi
 
 ## Use R-packages with specific versions for reproducibility
