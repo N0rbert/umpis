@@ -587,7 +587,7 @@ bookdown_ver="0.37"
 knitr_ver="1.45"
 xaringan_ver="0.29"
 
-if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" ]]; then
+if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "bullseye" ]]; then
   ## installation of 'devtools' is difficult with R 3.6 and R 4.3 (for xenial and bionic), so let's try to install fixed versions
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
