@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "noble|wilma|xia" -e "orel|1.7_x86-64|1.8_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -17,7 +17,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "jammy|vanessa|vera|victoria|virginia"; then
     ver=jammy
   fi
-  if lsb_release -cs | grep -qE "noble|wilma|xia"; then
+  if lsb_release -cs | grep -qE "noble|wilma|xia|zara"; then
     ver=noble
   fi
   if lsb_release -cs | grep -qE "stretch|cindy"; then
@@ -42,7 +42,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra12
   fi
 else
-  echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22 and 22.1; LMDE 3, 4, 5 and 6 are supported!"
+  echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5 and 6 are supported!"
   exit 1
 fi
 
@@ -764,6 +764,9 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 else
   apt-get install -y playonlinux winetricks
+  if [ "$ver" == "noble" ]; then
+    apt-get install -y python3-pyasyncore
+  fi 
 fi
 
 # Y PPA Manager, install gawk to prevent LP#2036761
