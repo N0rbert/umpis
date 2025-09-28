@@ -244,7 +244,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   apt-get install -y fslint
 elif [ "$ver" == "astra9" ]; then
   cd /tmp
-  wget -c http://deb.debian.org/debian/pool/main/f/fslint/fslint_2.46-1_all.deb
+  wget -c http://archive.debian.org/debian/pool/main/f/fslint/fslint_2.46-1_all.deb
   apt-get install -y ./fslint_2.46-1_all.deb
 fi
 
@@ -255,7 +255,7 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
     wget -c http://deb.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.53_all.deb
     apt-get install -y ./apt-xapian-index_0.53_all.deb
   else
-    wget -c http://deb.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.49_all.deb
+    wget -c http://archive.debian.org/debian/pool/main/a/apt-xapian-index/apt-xapian-index_0.49_all.deb
     apt-get install -y ./apt-xapian-index_0.49_all.deb
   fi
 else
@@ -365,7 +365,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
     elif [ "$ver" == "astra10" ]; then
       deb_ver=buster
       cd /tmp
-      wget -c http://deb.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb
+      wget -c http://archive.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb
       apt-get install -y ./libvpx5_1.7.0-3+deb10u1_amd64.deb
     elif [ "$ver" == "astra12" ]; then
       deb_ver=bookworm
@@ -667,14 +667,14 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
 
   apt-get install -y texlive-extra-utils texlive-lang-cyrillic texlive-xetex texlive-fonts-extra texlive-science-doc texlive-science texlive-latex-extra lmodern
   cd /tmp
-  wget -c http://deb.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb
+  wget -c http://archive.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb
   if [ "$ver" == "trusty" ]; then
     apt-get install -y ./ttf-mscorefonts-installer_3.7_all.deb
   else
     apt-get install -y --allow-downgrades ./ttf-mscorefonts-installer_3.7_all.deb
   fi
 
-  wget -c http://deb.debian.org/debian/pool/main/f/fonts-cmu/fonts-cmu_0.7.0-3_all.deb
+  wget -c http://archive.debian.org/debian/pool/main/f/fonts-cmu/fonts-cmu_0.7.0-3_all.deb
   apt-get install -y ./fonts-cmu_0.7.0-3_all.deb
 else
   apt-get install -y texlive-extra-utils biber texlive-lang-cyrillic fonts-cmu texlive-xetex texlive-fonts-extra texlive-science-doc texlive-science font-manager ttf-mscorefonts-installer texlive-latex-extra texlive-luatex lmodern
@@ -818,9 +818,9 @@ if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver
 fi
 if [ "$ver" == "astra10" ]; then
   cd /tmp
-  wget -c http://security.debian.org/debian-security/pool/updates/main/s/snapd/snapd_2.37.4-1+deb10u3_amd64.deb
-  wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/libsnapd-glib1_1.45-1.1_amd64.deb
-  wget -c http://deb.debian.org/debian/pool/main/s/snapd-glib/gir1.2-snapd-1_1.45-1.1_amd64.deb
+  wget -c http://archive.debian.org/debian-security/pool/updates/main/s/snapd/snapd_2.37.4-1+deb10u3_amd64.deb
+  wget -c http://archive.debian.org/debian/pool/main/s/snapd-glib/libsnapd-glib1_1.45-1.1_amd64.deb
+  wget -c http://archive.debian.org/debian/pool/main/s/snapd-glib/gir1.2-snapd-1_1.45-1.1_amd64.deb
 
   wget -c http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-avr/gcc-avr_5.4.0+Atmel3.6.0-1build1_amd64.deb
   wget -c http://archive.ubuntu.com/ubuntu/pool/universe/b/binutils-avr/binutils-avr_2.26.20160125+Atmel3.6.0-1_amd64.deb
@@ -834,8 +834,8 @@ if [ "$ver" == "astra10" ]; then
 fi
 if [ "$ver" == "astra12" ]; then
   cd /tmp
-  wget -c http://deb.debian.org/debian/pool/main/s/snapd/snapd_2.57.6-1+b5_amd64.deb
-  apt-get install -y ./snapd_2.57.6-1+b5_amd64.deb
+  wget -c http://deb.debian.org/debian/pool/main/s/snapd/snapd_2.57.6-1+b6_amd64.deb
+  apt-get install -y ./snapd_2.57.6-1+b6_amd64.deb
 
   wget -c http://deb.debian.org/debian/pool/main/g/gcc-avr/gcc-avr_5.4.0+Atmel3.6.2-3_amd64.deb
   wget -c http://deb.debian.org/debian/pool/main/b/binutils-avr/binutils-avr_2.26.20160125+Atmel3.6.2-4_amd64.deb
