@@ -262,6 +262,53 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
     apt-get install -y ./apt-xapian-index_0.49_all.deb
   fi
 else
+  # restore Quick Filter and apt-xapian-index in the Synaptic
+  if [ "$ver" == "trixie" ]; then
+      cat <<EOF | tee /etc/apt/sources.list.d/nrbrtx-ubuntu-synaptic-questing.sources
+Types: deb deb-src
+URIs: http://ppa.launchpad.net/nrbrtx/synaptic/ubuntu/
+Suites: questing
+Components: main
+Signed-By: 
+ -----BEGIN PGP PUBLIC KEY BLOCK-----
+ .
+ mQINBFUPLWABEADRWUm0WCjOSgpUEl2Tm2vFbn99vFlrnA+08JqAEQBroXd54fF3
+ t6vyHzV7CsxrGmriNhYPk3O9L+PZZ64HaXKB3THic//GOhip1j4b+LMx3gEIMVqp
+ +g9vAhaKkOXa57BIuJT0zqggw7d9dMiJlvmFyTCgMvR4Hklo3M/72itRxiPfh7dM
+ VauI98swPkEfK858vXOkniRdFAtl7OaoR0x+qWBvLqLFSkIIRALoxuw2BpAyEAtZ
+ aZaXfXYqne9EFl8Q1dvV+w9TzCgPfQDVfwheiZl3Z4fcWuTt9tKl5/D0DJLnenY9
+ QRATDTczHT7olhAucfabRbVqa1Hdg8cK+8puIo35+dPoxdbVnQW63wtwIfu07Ya4
+ kKWp4YSTNp6iEHIYX5tGECI7mQNaU292fYR8Y4Of+uR8RWPjO/Vv4UyGPoUnpApv
+ J3mpN4miQHOSvA/76F9ZkUr6SyOANATsrmSj5EyWbExtAKf064Crubub2wFK3Fp3
+ HUOdwc31aDTr8tkdMV2U8okNcLO+tAwUZs7uR/5gzq41uearQ+GABtYQE3+K7Nnf
+ XU9cMV5nKDI/lzJv9o+ftwztbmUUh3LJ373qjtX3013XUkUP2HCRn+yYkc/nkni3
+ jgUhnwhRMXKX9JFa1VnnfoTZxztV2uWF7LMOg4Z68nOWhkw1+2j8LZomLwARAQAB
+ tBlMYXVuY2hwYWQgUFBBIGZvciBOb3JiZXJ0iQI4BBMBAgAiBQJVDy1gAhsDBgsJ
+ CAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRAZv8r1Fo0zqWbqD/9Qkh4fW+Whu5iI
+ Pko+RioENNMoNK012uA9yWJBFgTD8uMC0/mD8Q7zwh2aPJ8M5wnmq9OqIVj4/1PW
+ ufgf0LrkR1yL34cX+9urm3+npiOnmjlizdFz34gi4ni9DS0DjTLIUPXEkJosxTYw
+ 4T2BQlqop3xIQPo9nYh026pQ1UQg1blL4k81y88Le4LIRhb0E3mvPGW1mFta779H
+ slQ4P8CkylohsQ3VsBdOgOp0UcOAVldPy12FGnB9D9A1W2QK/zmqCjQhqvNHP2Gl
+ 60fsPJBd1q4FXqvMsJ7MbKri6N3PoTZoEQwPoE9UX8uTDpJyD2csG47+2cTjQtCC
+ SlDDPET5U01LXfK1nGcT1qDiiYdn8Vo8GMT8Uxul+B871Tq+0TBNVn6uB12b0z+F
+ HWWhwyqZ8l09Z30CsX2N4qlw6uMYtbKVXpXoZKcJGZZ5jgy6Cv9yY6XTUCHZvlMi
+ e5q0gmfK9rGf5o/jodR3Nx4agMLtOsVh5nX9F3kfcjA+yScxG7XTSCzTLZZ7yh8c
+ GZnkgRjSCl/EERtdzA/zvTJNv3qocT5qefa9OHFLzXhapJdT7rqBBvodpz7aEuyt
+ PzF7SnKUFqC96fJva1I0FRspkTU/FpFjAe4u0AhNmrq+KM5ix4t2OvoW7/lmfy+t
+ 7V41wW5M4tl+fD20NiPBA+/Y+pP5sQ==
+ =nhoj
+ -----END PGP PUBLIC KEY BLOCK-----
+EOF
+
+      cat <<EOF > /etc/apt/preferences.d/pin-lp-nrbrtx-synaptic
+Package: *
+Pin: release o=LP-PPA-nrbrtx-synaptic
+Pin-Priority: 1337
+EOF
+
+    apt-get update
+  fi
+
   apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
 fi
 
