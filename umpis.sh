@@ -545,7 +545,7 @@ if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
 fi
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev libwebp-dev
 
 if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
@@ -592,8 +592,14 @@ bookdown_ver="0.37"
 knitr_ver="1.45"
 xaringan_ver="0.29"
 
-if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "bullseye" ]]; then
-  ## installation of 'devtools' is difficult with R 3.6 and R 4.3 (for xenial and bionic), so let's try to install fixed versions
+if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "bullseye" || "$ver" == "buster" || "$ver" == "focal" ]]; then
+  ## installation of 'devtools' is difficult with 
+  ## R 3.6 (trusty, stretch, astra9)
+  ## R 4.0 (bullseye)
+  ## R 4.3 (xenial, bionic)
+  ## R 4.4 (buster)
+  ## R 4.5 (focal)
+  ## so let's try to install fixed versions
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
@@ -768,7 +774,12 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
     apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb winetricks
   fi
 else
-  apt-get install -y playonlinux winetricks
+  if [ "$ver" != "astra10" ]; then
+    apt-get install -y playonlinux
+  fi
+
+  apt-get install -y winetricks
+
   if [[ "$ver" == "noble" || "$ver" == "trixie" ]]; then
     apt-get install -y python3-pyasyncore
   fi 
