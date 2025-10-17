@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie|gigi" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -32,6 +32,9 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "bookworm|faye"; then
     ver=bookworm
   fi
+  if lsb_release -cs | grep -qE "trixie|gigi"; then
+    ver=trixie
+  fi
   if lsb_release -cs | grep -q "orel"; then
     ver=astra9
   fi
@@ -42,7 +45,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra12
   fi
 else
-  echo "Currently only Debian 9, 10, 11 and 12; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5 and 6 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12 and 13; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5, 6 and 7 are supported!"
   exit 1
 fi
 
@@ -158,7 +161,7 @@ apt-get install -f -y
 dpkg --configure -a
 
 # add-apt-repository, wget
-if [ "$ver" != "astra10" ]; then
+if [[ "$ver" != "astra10" && "$ver" != "trixie" ]]; then
   apt-get install -y software-properties-common wget
 else
   apt-get install -y wget
@@ -206,7 +209,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
   if [ "$ver" == "astra12" ]; then
     cd /tmp
     wget -c http://deb.debian.org/debian/pool/main/p/pysvn/python3-svn_1.9.15-1+b3_amd64.deb
@@ -259,6 +262,53 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
     apt-get install -y ./apt-xapian-index_0.49_all.deb
   fi
 else
+  # restore Quick Filter and apt-xapian-index in the Synaptic
+  if [ "$ver" == "trixie" ]; then
+      cat <<EOF | tee /etc/apt/sources.list.d/nrbrtx-ubuntu-synaptic-questing.sources
+Types: deb deb-src
+URIs: http://ppa.launchpad.net/nrbrtx/synaptic/ubuntu/
+Suites: questing
+Components: main
+Signed-By: 
+ -----BEGIN PGP PUBLIC KEY BLOCK-----
+ .
+ mQINBFUPLWABEADRWUm0WCjOSgpUEl2Tm2vFbn99vFlrnA+08JqAEQBroXd54fF3
+ t6vyHzV7CsxrGmriNhYPk3O9L+PZZ64HaXKB3THic//GOhip1j4b+LMx3gEIMVqp
+ +g9vAhaKkOXa57BIuJT0zqggw7d9dMiJlvmFyTCgMvR4Hklo3M/72itRxiPfh7dM
+ VauI98swPkEfK858vXOkniRdFAtl7OaoR0x+qWBvLqLFSkIIRALoxuw2BpAyEAtZ
+ aZaXfXYqne9EFl8Q1dvV+w9TzCgPfQDVfwheiZl3Z4fcWuTt9tKl5/D0DJLnenY9
+ QRATDTczHT7olhAucfabRbVqa1Hdg8cK+8puIo35+dPoxdbVnQW63wtwIfu07Ya4
+ kKWp4YSTNp6iEHIYX5tGECI7mQNaU292fYR8Y4Of+uR8RWPjO/Vv4UyGPoUnpApv
+ J3mpN4miQHOSvA/76F9ZkUr6SyOANATsrmSj5EyWbExtAKf064Crubub2wFK3Fp3
+ HUOdwc31aDTr8tkdMV2U8okNcLO+tAwUZs7uR/5gzq41uearQ+GABtYQE3+K7Nnf
+ XU9cMV5nKDI/lzJv9o+ftwztbmUUh3LJ373qjtX3013XUkUP2HCRn+yYkc/nkni3
+ jgUhnwhRMXKX9JFa1VnnfoTZxztV2uWF7LMOg4Z68nOWhkw1+2j8LZomLwARAQAB
+ tBlMYXVuY2hwYWQgUFBBIGZvciBOb3JiZXJ0iQI4BBMBAgAiBQJVDy1gAhsDBgsJ
+ CAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRAZv8r1Fo0zqWbqD/9Qkh4fW+Whu5iI
+ Pko+RioENNMoNK012uA9yWJBFgTD8uMC0/mD8Q7zwh2aPJ8M5wnmq9OqIVj4/1PW
+ ufgf0LrkR1yL34cX+9urm3+npiOnmjlizdFz34gi4ni9DS0DjTLIUPXEkJosxTYw
+ 4T2BQlqop3xIQPo9nYh026pQ1UQg1blL4k81y88Le4LIRhb0E3mvPGW1mFta779H
+ slQ4P8CkylohsQ3VsBdOgOp0UcOAVldPy12FGnB9D9A1W2QK/zmqCjQhqvNHP2Gl
+ 60fsPJBd1q4FXqvMsJ7MbKri6N3PoTZoEQwPoE9UX8uTDpJyD2csG47+2cTjQtCC
+ SlDDPET5U01LXfK1nGcT1qDiiYdn8Vo8GMT8Uxul+B871Tq+0TBNVn6uB12b0z+F
+ HWWhwyqZ8l09Z30CsX2N4qlw6uMYtbKVXpXoZKcJGZZ5jgy6Cv9yY6XTUCHZvlMi
+ e5q0gmfK9rGf5o/jodR3Nx4agMLtOsVh5nX9F3kfcjA+yScxG7XTSCzTLZZ7yh8c
+ GZnkgRjSCl/EERtdzA/zvTJNv3qocT5qefa9OHFLzXhapJdT7rqBBvodpz7aEuyt
+ PzF7SnKUFqC96fJva1I0FRspkTU/FpFjAe4u0AhNmrq+KM5ix4t2OvoW7/lmfy+t
+ 7V41wW5M4tl+fD20NiPBA+/Y+pP5sQ==
+ =nhoj
+ -----END PGP PUBLIC KEY BLOCK-----
+EOF
+
+      cat <<EOF > /etc/apt/preferences.d/pin-lp-nrbrtx-synaptic
+Package: *
+Pin: release o=LP-PPA-nrbrtx-synaptic
+Pin-Priority: 1337
+EOF
+
+    apt-get update
+  fi
+
   apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
 fi
 
@@ -302,7 +352,7 @@ if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
   fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -333,14 +383,14 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
     echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
     apt-get install -y virtualbox
     if [ $is_docker == 0 ]; then
       usermod -a -G vboxusers "$SUDO_USER"
     fi
   fi
-  if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" || "$ver" == "trixie" ]]; then
     if [ "$ver" == "xenial" ]; then
       apt-get install -y ca-certificates apt-transport-https
     else
@@ -355,8 +405,10 @@ if [ "$dpkg_arch" == "amd64" ]; then
       wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O /tmp/vbox.key
       apt-key add /tmp/vbox.key
       apt-key adv --keyserver keyserver.ubuntu.com --recv-key 54422A4B98AB5139
-    else
+    elif [ "$ver" != "trixie" ]; then
       wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | apt-key add
+    elif [ "$ver" == "trixie" ]; then
+      wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | gpg --yes --output /usr/share/keyrings/oracle-virtualbox-2016.gpg --dearmor
     fi
 
     deb_ver="$ver"
@@ -372,17 +424,30 @@ if [ "$dpkg_arch" == "amd64" ]; then
       apt-get install -y linux-headers-all
     fi
 
-    echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
-    apt-get update
-    apt-get install -y virtualbox-6.1
+    if [ "$ver" == "trixie" ]; then
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
+      apt-get update
+      apt-get install -y virtualbox-7.1
+    else
+      echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
+      apt-get update
+      apt-get install -y virtualbox-6.1
+    fi
 
     # download and install extpack using the same method as in alpis.sh
     mkdir -p /usr/lib/virtualbox/ExtensionPacks
     vbox_version=$(VBoxManage -V | tail -n1 | awk -Fr '{print $1}')
     cd /tmp
-    wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
-    VBoxManage extpack cleanup
-    VBoxManage extpack install --replace "/tmp/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c
+
+    if echo "$vbox_version" | grep -Eq -e '^(5|6)' -e '7.0'; then # ver 5.x, 6.x, 7.0
+      wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
+      VBoxManage extpack cleanup
+      VBoxManage extpack install --replace "/tmp/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c
+    else # ver 7.1
+      wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
+      VBoxManage extpack cleanup
+      VBoxManage extpack install --replace "/tmp/Oracle_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=eb31505e56e9b4d0fbca139104da41ac6f6b98f8e78968bdf01b1f3da3c4f9ae
+    fi
 
     if [ $is_docker == 0 ]; then
       usermod -a -G vboxusers "$SUDO_USER"
@@ -396,7 +461,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi #/amd64
 
 # LibreOffice
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:libreoffice/ppa
 fi
 apt-get update
@@ -470,6 +535,8 @@ if [ "$dpkg_arch" == "amd64" ]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [ "$ver" == "focal" ]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/focal/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
+  elif [ "$ver" == "trixie" ]; then
+    wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
   elif [ "$ver" == "xenial" ]; then
@@ -546,7 +613,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra10" ]]; then
   apt-get install -y libgit2-dev
 fi
 
@@ -578,7 +645,7 @@ fi
 if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
-if [ "$ver" == "focal" ]; then
+if [[ "$ver" == "focal" || "$ver" == "trixie" ]]; then
     r_ver="4.5"
 fi
 
@@ -774,7 +841,8 @@ else
   fi
 
   apt-get install -y winetricks
-  if [ "$ver" == "noble" ]; then
+
+  if [[ "$ver" == "noble" || "$ver" == "trixie" ]]; then
     apt-get install -y python3-pyasyncore
   fi 
 fi
@@ -782,14 +850,14 @@ fi
 # Y PPA Manager, install gawk to prevent LP#2036761
 apt-get install -y ppa-purge gawk || true
 
-if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:webupd8team/y-ppa-manager
   apt-get update
   apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   if [ "$dpkg_arch" == "amd64" ]; then
     add-apt-repository -y ppa:atareao/telegram
     apt-get update
@@ -821,7 +889,7 @@ if [ "$ver" != "trusty" ]; then
 fi
 
 # Ubuntu Make
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:lyzardking/ubuntu-make
   apt-get update
   apt-get install -y ubuntu-make
@@ -855,7 +923,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
   umake_path=umake
-  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
     apt-get install -y snapd
 
     systemctl unmask snapd.seeded snapd
@@ -868,7 +936,7 @@ if [ $is_docker == 0 ] ; then
     umake_path=/snap/bin/umake
 
     # need to use SDDM on Debian because of https://github.com/ubuntu/ubuntu-make/issues/678
-    if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" ]]; then
+    if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
       apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
       unset DEBIAN_FRONTEND
       dpkg-reconfigure sddm
@@ -895,8 +963,8 @@ $1}" != "$OPTIONS" ]; then
 EOF
 fi
 
-# fixes for Bullseye, Bookworm, Jammy and Noble
-if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+# fixes for Bullseye, Bookworm, Trixie, Jammy and Noble
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   # Readline fix for LP#1926256 bug
   if [ $is_docker == 0 ]; then
     echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
@@ -905,7 +973,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "jammy" || "$ver
   fi
 
   # VTE fix for LP#1922276 bug
-  if [ "$ver" != "noble" ]; then
+  if [[ "$ver" != "noble" && "$ver" != "trixie" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
     if [ "$ver" == "astra12" ]; then
       echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
@@ -923,11 +991,56 @@ EOF
 fi
 
 # fixes for Bookworm, Jammy and Noble (see LP#1947420)
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
-  apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
+if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" || "$ver" == "trixie" ]]; then
+  if [ "$ver" != "trixie" ]; then
+    apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
+  fi
+
   if [ "$ver" == "astra12" ]; then
     echo "deb http://ppa.launchpad.net/nrbrtx/wnck/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.list
       cat <<EOF > /etc/apt/preferences.d/pin-lp-nrbrtx-wnck
+Package: *wnck*
+Pin: release o=LP-PPA-nrbrtx-wnck
+Pin-Priority: 1337
+EOF
+  elif [ "$ver" == "trixie" ]; then
+    cat <<EOF | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.sources
+Types: deb deb-src
+URIs: http://ppa.launchpad.net/nrbrtx/wnck/ubuntu/
+Suites: jammy
+Components: main
+Signed-By: 
+ -----BEGIN PGP PUBLIC KEY BLOCK-----
+ .
+ mQINBFUPLWABEADRWUm0WCjOSgpUEl2Tm2vFbn99vFlrnA+08JqAEQBroXd54fF3
+ t6vyHzV7CsxrGmriNhYPk3O9L+PZZ64HaXKB3THic//GOhip1j4b+LMx3gEIMVqp
+ +g9vAhaKkOXa57BIuJT0zqggw7d9dMiJlvmFyTCgMvR4Hklo3M/72itRxiPfh7dM
+ VauI98swPkEfK858vXOkniRdFAtl7OaoR0x+qWBvLqLFSkIIRALoxuw2BpAyEAtZ
+ aZaXfXYqne9EFl8Q1dvV+w9TzCgPfQDVfwheiZl3Z4fcWuTt9tKl5/D0DJLnenY9
+ QRATDTczHT7olhAucfabRbVqa1Hdg8cK+8puIo35+dPoxdbVnQW63wtwIfu07Ya4
+ kKWp4YSTNp6iEHIYX5tGECI7mQNaU292fYR8Y4Of+uR8RWPjO/Vv4UyGPoUnpApv
+ J3mpN4miQHOSvA/76F9ZkUr6SyOANATsrmSj5EyWbExtAKf064Crubub2wFK3Fp3
+ HUOdwc31aDTr8tkdMV2U8okNcLO+tAwUZs7uR/5gzq41uearQ+GABtYQE3+K7Nnf
+ XU9cMV5nKDI/lzJv9o+ftwztbmUUh3LJ373qjtX3013XUkUP2HCRn+yYkc/nkni3
+ jgUhnwhRMXKX9JFa1VnnfoTZxztV2uWF7LMOg4Z68nOWhkw1+2j8LZomLwARAQAB
+ tBlMYXVuY2hwYWQgUFBBIGZvciBOb3JiZXJ0iQI4BBMBAgAiBQJVDy1gAhsDBgsJ
+ CAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRAZv8r1Fo0zqWbqD/9Qkh4fW+Whu5iI
+ Pko+RioENNMoNK012uA9yWJBFgTD8uMC0/mD8Q7zwh2aPJ8M5wnmq9OqIVj4/1PW
+ ufgf0LrkR1yL34cX+9urm3+npiOnmjlizdFz34gi4ni9DS0DjTLIUPXEkJosxTYw
+ 4T2BQlqop3xIQPo9nYh026pQ1UQg1blL4k81y88Le4LIRhb0E3mvPGW1mFta779H
+ slQ4P8CkylohsQ3VsBdOgOp0UcOAVldPy12FGnB9D9A1W2QK/zmqCjQhqvNHP2Gl
+ 60fsPJBd1q4FXqvMsJ7MbKri6N3PoTZoEQwPoE9UX8uTDpJyD2csG47+2cTjQtCC
+ SlDDPET5U01LXfK1nGcT1qDiiYdn8Vo8GMT8Uxul+B871Tq+0TBNVn6uB12b0z+F
+ HWWhwyqZ8l09Z30CsX2N4qlw6uMYtbKVXpXoZKcJGZZ5jgy6Cv9yY6XTUCHZvlMi
+ e5q0gmfK9rGf5o/jodR3Nx4agMLtOsVh5nX9F3kfcjA+yScxG7XTSCzTLZZ7yh8c
+ GZnkgRjSCl/EERtdzA/zvTJNv3qocT5qefa9OHFLzXhapJdT7rqBBvodpz7aEuyt
+ PzF7SnKUFqC96fJva1I0FRspkTU/FpFjAe4u0AhNmrq+KM5ix4t2OvoW7/lmfy+t
+ 7V41wW5M4tl+fD20NiPBA+/Y+pP5sQ==
+ =nhoj
+ -----END PGP PUBLIC KEY BLOCK-----
+EOF
+
+    cat <<EOF > /etc/apt/preferences.d/pin-lp-nrbrtx-wnck
 Package: *wnck*
 Pin: release o=LP-PPA-nrbrtx-wnck
 Pin-Priority: 1337
