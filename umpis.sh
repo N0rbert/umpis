@@ -390,7 +390,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
       usermod -a -G vboxusers "$SUDO_USER"
     fi
   fi
-  if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "astra9" || "$ver" == "buster" || "$ver" == "astra10" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "astra12" || "$ver" == "trixie" ]]; then
     if [ "$ver" == "xenial" ]; then
       apt-get install -y ca-certificates apt-transport-https
     else
@@ -405,8 +405,10 @@ if [ "$dpkg_arch" == "amd64" ]; then
       wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O /tmp/vbox.key
       apt-key add /tmp/vbox.key
       apt-key adv --keyserver keyserver.ubuntu.com --recv-key 54422A4B98AB5139
-    else
+    elif [ "$ver" != "trixie" ]; then
       wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | apt-key add
+    elif [ "$ver" == "trixie" ]; then
+      wget https://www.virtualbox.org/download/oracle_vbox_2016.asc -O - | gpg --yes --output /usr/share/keyrings/oracle-virtualbox-2016.gpg --dearmor
     fi
 
     deb_ver="$ver"
@@ -422,17 +424,30 @@ if [ "$dpkg_arch" == "amd64" ]; then
       apt-get install -y linux-headers-all
     fi
 
-    echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
-    apt-get update
-    apt-get install -y virtualbox-6.1
+    if [ "$ver" == "trixie" ]; then
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
+      apt-get update
+      apt-get install -y virtualbox-7.1
+    else
+      echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $deb_ver contrib" | tee /etc/apt/sources.list.d/virtualbox.list
+      apt-get update
+      apt-get install -y virtualbox-6.1
+    fi
 
     # download and install extpack using the same method as in alpis.sh
     mkdir -p /usr/lib/virtualbox/ExtensionPacks
     vbox_version=$(VBoxManage -V | tail -n1 | awk -Fr '{print $1}')
     cd /tmp
-    wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
-    VBoxManage extpack cleanup
-    VBoxManage extpack install --replace "/tmp/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c
+
+    if echo "$vbox_version" | grep -Eq -e '^(5|6)' -e '7.0'; then # ver 5.x, 6.x, 7.0
+      wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
+      VBoxManage extpack cleanup
+      VBoxManage extpack install --replace "/tmp/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c
+    else # ver 7.1
+      wget -c "https://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" || true
+      VBoxManage extpack cleanup
+      VBoxManage extpack install --replace "/tmp/Oracle_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack" --accept-license=eb31505e56e9b4d0fbca139104da41ac6f6b98f8e78968bdf01b1f3da3c4f9ae
+    fi
 
     if [ $is_docker == 0 ]; then
       usermod -a -G vboxusers "$SUDO_USER"
