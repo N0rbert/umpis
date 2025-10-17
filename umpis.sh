@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie|gigi" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie|gigi" -e "resolute" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -35,6 +35,9 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "trixie|gigi"; then
     ver=trixie
   fi
+  if lsb_release -cs | grep -qE "resolute"; then
+    ver=resolute
+  fi
   if lsb_release -cs | grep -q "orel"; then
     ver=astra9
   fi
@@ -45,7 +48,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra12
   fi
 else
-  echo "Currently only Debian 9, 10, 11, 12 and 13; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS and 24.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5, 6 and 7 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12 and 13; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 24.04 LTS and upcoming 26.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5, 6 and 7 are supported!"
   exit 1
 fi
 
@@ -67,6 +70,10 @@ if [ "$UID" -ne "0" ]
 then
   echo "Please run this script as root user with 'sudo -E ./umpis.sh'"
   exit 3
+fi
+
+if [ "$ver" == "resolute" ]; then
+  HOME=$(getent passwd "$SUDO_USER" | awk -F: '{print $6}')
 fi
 
 echo "Welcome to the Ubuntu MATE (and Debian) post-install script!"
@@ -160,6 +167,22 @@ apt-get dist-upgrade -o DPkg::Options::=--force-confdef --force-yes -y
 apt-get install -f -y
 dpkg --configure -a
 
+# revert to normal coreutils
+if [ "$ver" == "resolute" ]; then
+  cd /var/cache/apt/archives/
+  apt-get download coreutils-from-gnu
+  dpkg -i /var/cache/apt/archives/coreutils-from-gnu*.deb || true
+  apt-get install -y --allow-remove-essential coreutils-from-gnu coreutils-from-uutils- || true
+  apt-get install -f -y
+  dpkg --configure -a
+  apt-get purge -y rust-coreutils
+fi
+
+# revert to normal sudo
+if [ "$ver" == "resolute" ]; then
+  update-alternatives --set sudo /usr/bin/sudo.ws --force
+fi
+
 # add-apt-repository, wget
 if [[ "$ver" != "astra10" && "$ver" != "trixie" ]]; then
   apt-get install -y software-properties-common wget
@@ -200,8 +223,8 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 
   if [ $is_docker == 0 ]; then
-    sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/caja-python/extensions
-    cd ~/.local/share/caja-python/extensions
+    sudo -u "$SUDO_USER" -- mkdir -p "$HOME/.local/share/caja-python/extensions"
+    cd "$HOME/.local/share/caja-python/extensions"
     sudo -u "$SUDO_USER" -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.16/clients/caja/RabbitVCS.py
   else
     mkdir -p /usr/local/share/caja-python/extensions
@@ -209,7 +232,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
   if [ "$ver" == "astra12" ]; then
     cd /tmp
     wget -c http://deb.debian.org/debian/pool/main/p/pysvn/python3-svn_1.9.15-1+b3_amd64.deb
@@ -224,8 +247,8 @@ if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "
   fi
 
   if [ $is_docker == 0 ]; then
-    sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/caja-python/extensions
-    cd ~/.local/share/caja-python/extensions
+    sudo -u "$SUDO_USER" -- mkdir -p "$HOME/.local/share/caja-python/extensions"
+    cd "$HOME/.local/share/caja-python/extensions"
     sudo -u "$SUDO_USER" -- wget -c https://raw.githubusercontent.com/rabbitvcs/rabbitvcs/v0.18/clients/caja/RabbitVCS.py
   else
     mkdir -p /usr/local/share/caja-python/extensions
@@ -263,11 +286,11 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
   fi
 else
   # restore Quick Filter and apt-xapian-index in the Synaptic
-  if [ "$ver" == "trixie" ]; then
-      cat <<EOF | tee /etc/apt/sources.list.d/nrbrtx-ubuntu-synaptic-questing.sources
+  if [[ "$ver" == "trixie" || "$ver" == "resolute" ]]; then
+      cat <<EOF | tee /etc/apt/sources.list.d/nrbrtx-ubuntu-synaptic-resolute.sources
 Types: deb deb-src
 URIs: http://ppa.launchpad.net/nrbrtx/synaptic/ubuntu/
-Suites: questing
+Suites: resolute
 Components: main
 Signed-By: 
  -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -307,6 +330,8 @@ Pin-Priority: 1337
 EOF
 
     apt-get update
+  elif [ "$ver" == "resolute" ]; then
+    add-apt-repository -y ppa:nrbrtx/synaptic
   fi
 
   apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
@@ -352,7 +377,7 @@ if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
   fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -383,7 +408,7 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
     echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
     apt-get install -y virtualbox
     if [ $is_docker == 0 ]; then
@@ -461,7 +486,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi #/amd64
 
 # LibreOffice
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:libreoffice/ppa
 fi
 apt-get update
@@ -535,7 +560,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [ "$ver" == "focal" ]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/focal/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
-  elif [ "$ver" == "trixie" ]; then
+  elif [[ "$ver" == "trixie" || "$ver" == "resolute" ]]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
@@ -559,8 +584,8 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi
 
 if [ $is_docker == 0 ]; then
-  sudo -u "$SUDO_USER" -- mkdir -p ~/.config/rstudio
-  cat <<EOF > ~/.config/rstudio/rstudio-prefs.json
+  sudo -u "$SUDO_USER" -- mkdir -p "$HOME/.config/rstudio"
+  cat <<EOF > "$HOME/.config/rstudio/rstudio-prefs.json"
 {
     "check_for_updates": false,
     "pdf_previewer": "rstudio",
@@ -568,9 +593,9 @@ if [ $is_docker == 0 ]; then
     "submit_crash_reports": false
 }
 EOF
-  chown "$SUDO_USER": ~/.config/rstudio/rstudio-prefs.json
+  chown "$SUDO_USER": "$HOME/.config/rstudio/rstudio-prefs.json"
 
-  echo 'crash-handling-enabled="0"' | sudo -u "$SUDO_USER" -- tee ~/.config/rstudio/crash-handler.conf
+  echo 'crash-handling-enabled="0"' | sudo -u "$SUDO_USER" -- tee "$HOME/.config/rstudio/crash-handler.conf"
 else
   mkdir -p /etc/skel/.config/rstudio
   cat <<EOF > /etc/skel/.config/rstudio/rstudio-prefs.json
@@ -613,7 +638,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "astra10" ]]; then
   apt-get install -y libgit2-dev
 fi
 
@@ -642,10 +667,10 @@ fi
 if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
-if [[ "$ver" == "focal" || "$ver" == "trixie" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "trixie" || "$ver" == "resolute" ]]; then
     r_ver="4.5"
 fi
 
@@ -664,10 +689,10 @@ if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" 
   ## so let's try to install fixed versions
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
-      sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/x86_64-pc-linux-gnu-library/$r_ver"
+      sudo -u "$SUDO_USER" -- R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
       R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source')"
       R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source')"
@@ -678,22 +703,22 @@ else
   ## on newer releases install 'devtools' and then specify package versions for reproducibility
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
-      sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/x86_64-pc-linux-gnu-library/$r_ver"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
       R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
   elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
-      sudo -u "$SUDO_USER" -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/aarch64-unknown-linux-gnu-library/$r_ver"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='$HOME/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
       R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
   elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
-      sudo -u "$SUDO_USER" -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/arm-unknown-linux-gnueabihf-library/$r_ver"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='$HOME/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
       R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
     fi
@@ -713,12 +738,12 @@ fi
 if [ "$dpkg_arch" == "amd64" ]; then
   if [ $is_docker == 0 ]; then
     ## fixes for LibreOffice <-> RStudio interaction
-    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.profile
-    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" ~/.bashrc || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> ~/.bashrc
+    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" "$HOME/.profile" || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> "$HOME/.profile"
+    grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" "$HOME/.bashrc" || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> "$HOME/.bashrc"
 
-    sudo -u "$SUDO_USER" -- mkdir -p ~/.local/share/applications/
-    sudo -u "$SUDO_USER" -- cp /usr/share/applications/rstudio.desktop ~/.local/share/applications/
-    sudo -u "$SUDO_USER" -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  ~/.local/share/applications/rstudio.desktop
+    sudo -u "$SUDO_USER" -- mkdir -p "$HOME/.local/share/applications/"
+    sudo -u "$SUDO_USER" -- cp /usr/share/applications/rstudio.desktop "$HOME/.local/share/applications/"
+    sudo -u "$SUDO_USER" -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  "$HOME/.local/share/applications/rstudio.desktop"
   else
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" /etc/skel/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> /etc/skel/.profile
@@ -810,10 +835,10 @@ patch -u /usr/lib/python3/dist-packages/markdown/extensions/fenced_code.py -s --
 fi # /versions
 
 if [ $is_docker == 0 ]; then
-  mkdir -p ~/.config
-  chown -R "$SUDO_USER":  ~/.config
-  echo mathjax | sudo -u "$SUDO_USER" -- tee -a ~/.config/markdown-extensions.txt
-  chown "$SUDO_USER": ~/.config/markdown-extensions.txt
+  mkdir -p "$HOME/.config"
+  chown -R "$SUDO_USER":  "$HOME/.config"
+  echo mathjax | sudo -u "$SUDO_USER" -- tee -a "$HOME/.config/markdown-extensions.txt"
+  chown "$SUDO_USER": "$HOME/.config/markdown-extensions.txt"
 else
   echo mathjax >> /etc/skel/.config/markdown-extensions.txt
 fi
@@ -836,13 +861,13 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
     apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb winetricks
   fi
 else
-  if [ "$ver" != "astra10" ]; then
+  if [[ "$ver" != "astra10" && "$ver" != "resolute" ]]; then
     apt-get install -y playonlinux
   fi
 
   apt-get install -y winetricks
 
-  if [[ "$ver" == "noble" || "$ver" == "trixie" ]]; then
+  if [[ "$ver" == "noble" || "$ver" == "trixie" || "$ver" == "resolute" ]]; then
     apt-get install -y python3-pyasyncore
   fi 
 fi
@@ -850,14 +875,14 @@ fi
 # Y PPA Manager, install gawk to prevent LP#2036761
 apt-get install -y ppa-purge gawk || true
 
-if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:webupd8team/y-ppa-manager
   apt-get update
   apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   if [ "$dpkg_arch" == "amd64" ]; then
     add-apt-repository -y ppa:atareao/telegram
     apt-get update
@@ -889,7 +914,7 @@ if [ "$ver" != "trusty" ]; then
 fi
 
 # Ubuntu Make
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:lyzardking/ubuntu-make
   apt-get update
   apt-get install -y ubuntu-make
@@ -923,7 +948,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
   umake_path=umake
-  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
     apt-get install -y snapd
 
     systemctl unmask snapd.seeded snapd
@@ -963,17 +988,17 @@ $1}" != "$OPTIONS" ]; then
 EOF
 fi
 
-# fixes for Bullseye, Bookworm, Trixie, Jammy and Noble
-if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+# fixes for Bullseye, Bookworm, Trixie, Jammy, Noble and Resolute
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   # Readline fix for LP#1926256 bug
   if [ $is_docker == 0 ]; then
-    echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a ~/.inputrc
+    echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a "$HOME/.inputrc"
   else
     echo "set enable-bracketed-paste Off" | tee -a /etc/inputrc
   fi
 
   # VTE fix for LP#1922276 bug
-  if [[ "$ver" != "noble" && "$ver" != "trixie" ]]; then
+  if [[ "$ver" != "noble" && "$ver" != "trixie" && "$ver" != "resolute" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
     if [ "$ver" == "astra12" ]; then
       echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
@@ -990,9 +1015,9 @@ EOF
   fi
 fi
 
-# fixes for Bookworm, Jammy and Noble (see LP#1947420)
-if [[ "$ver" == "bookworm" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" || "$ver" == "trixie" ]]; then
-  if [ "$ver" != "trixie" ]; then
+# fixes for Bookworm, Jammy, Noble (see LP#1947420) and Resolute
+if [[ "$ver" == "bookworm" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" != "trixie" && "$ver" != "resolute" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
   fi
 
@@ -1003,7 +1028,7 @@ Package: *wnck*
 Pin: release o=LP-PPA-nrbrtx-wnck
 Pin-Priority: 1337
 EOF
-  elif [ "$ver" == "trixie" ]; then
+  elif [[ "$ver" == "trixie" || "$ver" == "resolute" ]]; then
     cat <<EOF | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.sources
 Types: deb deb-src
 URIs: http://ppa.launchpad.net/nrbrtx/wnck/ubuntu/
