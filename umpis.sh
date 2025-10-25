@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu MATE (and Debian) post-install script
 
-if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie|gigi" -e "resolute" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
+if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" -e "bionic|tara|tessa|tina|tricia" -e "focal|ulyana|ulyssa|uma|una" -e "jammy|vanessa|vera|victoria|virginia" -e "stretch|cindy" -e "buster|debbie" -e "bullseye|elsie" -e "bookworm|faye" -e "trixie|gigi" -e "forky|resolute" -e "noble|wilma|xia|zara" -e "orel|1.7_x86-64|1.8_x86-64"; then
   if lsb_release -cs | grep -q "trusty"; then
     ver=trusty
   fi
@@ -35,6 +35,9 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
   if lsb_release -cs | grep -qE "trixie|gigi"; then
     ver=trixie
   fi
+  if lsb_release -cs | grep -qE "forky"; then
+    ver=forky
+  fi 
   if lsb_release -cs | grep -qE "resolute"; then
     ver=resolute
   fi
@@ -48,7 +51,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra12
   fi
 else
-  echo "Currently only Debian 9, 10, 11, 12 and 13; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 24.04 LTS and upcoming 26.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5, 6 and 7 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12, 13 and upcoming 14; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 24.04 LTS and upcoming 26.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1 and 22.2; LMDE 3, 4, 5, 6 and 7 are supported!"
   exit 1
 fi
 
@@ -184,7 +187,7 @@ if [ "$ver" == "resolute" ]; then
 fi
 
 # add-apt-repository, wget
-if [[ "$ver" != "astra10" && "$ver" != "trixie" ]]; then
+if [[ "$ver" != "astra10" && "$ver" != "trixie" && "$ver" != "forky" ]]; then
   apt-get install -y software-properties-common wget
 else
   apt-get install -y wget
@@ -232,7 +235,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
   fi
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
   if [ "$ver" == "astra12" ]; then
     cd /tmp
     wget -c http://deb.debian.org/debian/pool/main/p/pysvn/python3-svn_1.9.15-1+b3_amd64.deb
@@ -286,7 +289,7 @@ if [[ "$ver" == "astra9" || "$ver" == "astra10" || "$ver" == "astra12" ]]; then
   fi
 else
   # restore Quick Filter and apt-xapian-index in the Synaptic
-  if [[ "$ver" == "trixie" || "$ver" == "resolute" ]]; then
+  if [[ "$ver" == "trixie" || "$ver" == "forky" ]]; then
       cat <<EOF | tee /etc/apt/sources.list.d/nrbrtx-ubuntu-synaptic-resolute.sources
 Types: deb deb-src
 URIs: http://ppa.launchpad.net/nrbrtx/synaptic/ubuntu/
@@ -377,7 +380,7 @@ if [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
   fi
 fi
 
-if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "resolute" || "$ver" == "forky" || "$ver" == "astra12" ]]; then
   apt-get install -y meld
 else
   cd /tmp
@@ -408,7 +411,7 @@ fi
 
 # VirtualBox
 if [ "$dpkg_arch" == "amd64" ]; then
-  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+  if [[ "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
     echo "virtualbox-ext-pack virtualbox-ext-pack/license select true" | debconf-set-selections
     apt-get install -y virtualbox
     if [ $is_docker == 0 ]; then
@@ -486,7 +489,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 fi #/amd64
 
 # LibreOffice
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:libreoffice/ppa
 fi
 apt-get update
@@ -560,7 +563,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
     wget -c https://download1.rstudio.org/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
   elif [ "$ver" == "focal" ]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/focal/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
-  elif [[ "$ver" == "trixie" || "$ver" == "resolute" ]]; then
+  elif [[ "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" ]]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     wget -c https://download1.rstudio.org/desktop/debian9/x86_64/rstudio-2021.09.0-351-amd64.deb -O rstudio-latest-amd64.deb
@@ -638,7 +641,7 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
 fi
 
-if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "astra10" ]]; then
   apt-get install -y libgit2-dev
 fi
 
@@ -670,7 +673,7 @@ fi
 if [[ "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
-if [[ "$ver" == "focal" || "$ver" == "trixie" || "$ver" == "resolute" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" ]]; then
     r_ver="4.5"
 fi
 
@@ -861,13 +864,13 @@ if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" 
     apt-get install -y --allow-downgrades ./PlayOnLinux_4.3.4.deb winetricks
   fi
 else
-  if [[ "$ver" != "astra10" && "$ver" != "resolute" ]]; then
+  if [[ "$ver" != "astra10" && "$ver" != "forky" && "$ver" != "resolute" ]]; then
     apt-get install -y playonlinux
   fi
 
   apt-get install -y winetricks
 
-  if [[ "$ver" == "noble" || "$ver" == "trixie" || "$ver" == "resolute" ]]; then
+  if [[ "$ver" == "noble" || "$ver" == "trixie" ]]; then
     apt-get install -y python3-pyasyncore
   fi 
 fi
@@ -875,14 +878,14 @@ fi
 # Y PPA Manager, install gawk to prevent LP#2036761
 apt-get install -y ppa-purge gawk || true
 
-if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "jammy" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:webupd8team/y-ppa-manager
   apt-get update
   apt-get install -y y-ppa-manager
 fi
 
 # Telegram
-if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "trusty" && "$ver" != "noble" && "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" && "$ver" != "astra12" ]]; then
   if [ "$dpkg_arch" == "amd64" ]; then
     add-apt-repository -y ppa:atareao/telegram
     apt-get update
@@ -914,7 +917,7 @@ if [ "$ver" != "trusty" ]; then
 fi
 
 # Ubuntu Make
-if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
+if [[ "$ver" != "stretch" && "$ver" != "buster" && "$ver" != "bullseye" && "$ver" != "bookworm" && "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" && "$ver" != "astra9" && "$ver" != "astra10" &&  "$ver" != "trusty" && "$ver" != "astra12" ]]; then
   add-apt-repository -y ppa:lyzardking/ubuntu-make
   apt-get update
   apt-get install -y ubuntu-make
@@ -948,7 +951,7 @@ fi
 
 if [ $is_docker == 0 ] ; then
   umake_path=umake
-  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" != "astra9" && "$ver" != "stretch" && "$ver" != "trusty" && "$ver" != "xenial" && "$ver" != "bionic" && "$ver" != "focal" && "$ver" != "jammy" && "$ver" != "noble" || "$ver" == "astra10" || "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "astra12" ]]; then
     apt-get install -y snapd
 
     systemctl unmask snapd.seeded snapd
@@ -961,7 +964,7 @@ if [ $is_docker == 0 ] ; then
     umake_path=/snap/bin/umake
 
     # need to use SDDM on Debian because of https://github.com/ubuntu/ubuntu-make/issues/678
-    if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" ]]; then
+    if [[ "$ver" == "buster" || "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "forky" ]]; then
       apt-get install -y --reinstall sddm --no-install-recommends --no-install-suggests
       unset DEBIAN_FRONTEND
       dpkg-reconfigure sddm
@@ -971,7 +974,7 @@ if [ $is_docker == 0 ] ; then
 fi
 
 # fixes for Jammy
-if [[ "$ver" == "jammy" || "$ver" == "noble" ]]; then
+if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "resolute" ]]; then
 cat <<\EOF > /etc/X11/Xsession.d/20x11-add-hasoption
 # temporary fix for LP# 1922414, 1955135 and 1955136 bugs
 # read OPTIONFILE
@@ -988,8 +991,8 @@ $1}" != "$OPTIONS" ]; then
 EOF
 fi
 
-# fixes for Bullseye, Bookworm, Trixie, Jammy, Noble and Resolute
-if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+# fixes for Bullseye, Bookworm, Trixie, Forky, Jammy, Noble and Resolute
+if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
   # Readline fix for LP#1926256 bug
   if [ $is_docker == 0 ]; then
     echo "set enable-bracketed-paste Off" | sudo -u "$SUDO_USER" tee -a "$HOME/.inputrc"
@@ -998,7 +1001,7 @@ if [[ "$ver" == "bullseye" || "$ver" == "bookworm" || "$ver" == "trixie" || "$ve
   fi
 
   # VTE fix for LP#1922276 bug
-  if [[ "$ver" != "noble" && "$ver" != "trixie" && "$ver" != "resolute" ]]; then
+  if [[ "$ver" != "noble" && "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
     if [ "$ver" == "astra12" ]; then
       echo "deb http://ppa.launchpad.net/nrbrtx/vte/ubuntu jammy main" | tee /etc/apt/sources.list.d/lp-nrbrtx-vte-jammy.list
@@ -1016,8 +1019,8 @@ EOF
 fi
 
 # fixes for Bookworm, Jammy, Noble (see LP#1947420) and Resolute
-if [[ "$ver" == "bookworm" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
-  if [[ "$ver" != "trixie" && "$ver" != "resolute" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+  if [[ "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
   fi
 
@@ -1028,7 +1031,7 @@ Package: *wnck*
 Pin: release o=LP-PPA-nrbrtx-wnck
 Pin-Priority: 1337
 EOF
-  elif [[ "$ver" == "trixie" || "$ver" == "resolute" ]]; then
+  elif [[ "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" ]]; then
     cat <<EOF | tee /etc/apt/sources.list.d/lp-nrbrtx-wnck-jammy.sources
 Types: deb deb-src
 URIs: http://ppa.launchpad.net/nrbrtx/wnck/ubuntu/
