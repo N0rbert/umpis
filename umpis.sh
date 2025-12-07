@@ -1062,7 +1062,7 @@ apt-get autoremove -y
 if [[ "$ver" != "stretch" && "$ver" != "astra9" && "$ver" != "trusty" ]]; then
   if [ $is_docker == 0 ] ; then
     usermod -a -G dialout "$SUDO_USER"
-    sudo -u "$SUDO_USER" -- "$umake_path" electronics arduino-legacy
+    sudo -u "$SUDO_USER" -- "$umake_path" electronics arduino-legacy || sudo apt-get install -y arduino || echo "Error: unable to install Arduino Legacy 1.x IDE using neither umake nor APT, you have to choose other method of installation!"
   fi
 fi
 
