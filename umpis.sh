@@ -269,6 +269,7 @@ Types: deb deb-src
 URIs: http://ppa.launchpad.net/nrbrtx/synaptic/ubuntu/
 Suites: questing
 Components: main
+Trusted: yes
 Signed-By: 
  -----BEGIN PGP PUBLIC KEY BLOCK-----
  .
@@ -1009,6 +1010,7 @@ Types: deb deb-src
 URIs: http://ppa.launchpad.net/nrbrtx/wnck/ubuntu/
 Suites: jammy
 Components: main
+Trusted: yes
 Signed-By: 
  -----BEGIN PGP PUBLIC KEY BLOCK-----
  .
