@@ -680,23 +680,23 @@ else
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/x86_64-pc-linux-gnu-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
-      R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
+      R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/')"
     fi
   elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/aarch64-unknown-linux-gnu-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
-      R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
+      R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/')"
     fi
   elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p ~/R/arm-unknown-linux-gnueabihf-library/"$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/', lib='/home/$SUDO_USER/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
-      R -e "install.packages(c('devtools','tikzDevice'), repos='http://cran.r-project.org/')"
+      R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/')"
     fi
   fi
 
