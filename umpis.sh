@@ -310,7 +310,7 @@ EOF
     apt-get update
   fi
 
-  apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found
+  apt-get install -y htop mc ncdu aptitude synaptic apt-xapian-index apt-file command-not-found --allow-downgrades
 fi
 
 [ ! -e "/var/lib/synaptic/preferences" ] && mkdir -p /var/lib/synaptic/ && touch /var/lib/synaptic/preferences
@@ -608,7 +608,7 @@ if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
 fi
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev libwebp-dev
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev libwebp-dev cmake
 
 if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
