@@ -504,6 +504,12 @@ EOF
   apt-get update
 fi
 
+if [ "$ver" == "bullseye" ]; then
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'
+  echo "deb http://cloud.r-project.org/bin/linux/debian bullseye-cran40/" | tee /etc/apt/sources.list.d/r-cran.list
+  apt-get update
+fi
+
 if [ "$ver" == "trusty" ]; then
   add-apt-repository -y ppa:marutter/rrutter3.5
   apt-get update
@@ -631,9 +637,6 @@ fi
 if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" ]]; then
     r_ver="3.6"
 fi
-if [ "$ver" == "bullseye" ]; then
-    r_ver="4.0"
-fi
 if [ "$ver" == "jammy" ]; then
     r_ver="4.1"
 fi
@@ -646,7 +649,7 @@ fi
 if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
-if [[ "$ver" == "focal" || "$ver" == "trixie" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "bullseye" || "$ver" == "trixie" ]]; then
     r_ver="4.5"
 fi
 
@@ -655,10 +658,9 @@ bookdown_ver="0.37"
 knitr_ver="1.45"
 xaringan_ver="0.29"
 
-if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "bullseye" || "$ver" == "buster" || "$ver" == "focal" ]]; then
+if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "buster" || "$ver" == "focal" ]]; then
   ## installation of 'devtools' is difficult with 
   ## R 3.6 (trusty, stretch, astra9)
-  ## R 4.0 (bullseye)
   ## R 4.3 (xenial, bionic)
   ## R 4.4 (buster)
   ## R 4.5 (focal)
