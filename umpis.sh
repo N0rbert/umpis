@@ -614,7 +614,7 @@ if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
 fi
 
 # bookdown install for local user
-apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev libwebp-dev cmake
+apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev libwebp-dev cmake libuv1-dev
 
 if [[ "$ver" == "trusty" || "$ver" == "xenial" ]]; then
   apt-get install -y libtool
