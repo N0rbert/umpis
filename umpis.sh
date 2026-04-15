@@ -266,7 +266,9 @@ apt-get install -y gimp
 apt-get install -y inkscape
 
 # Double Commander
-apt-get install -y doublecmd-gtk
+if [ "$ver" != "forky" ]; then # TODO
+  apt-get install -y doublecmd-gtk
+fi
 
 # System tools
 if [[ "$ver" == "trusty" || "$ver" == "xenial" || "$ver" == "stretch" || "$ver" == "bionic" || "$ver" == "buster" ]]; then
@@ -674,7 +676,7 @@ fi
 if [[ "$ver" == "xenial" || "$ver" == "bionic" || "$ver" == "noble" ]]; then
     r_ver="4.3"
 fi
-if [[ "$ver" == "focal" || "$ver" == "buster" || "$ver" == "astra10" ]]; then
+if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
 if [[ "$ver" == "focal" || "$ver" == "bullseye" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" ]]; then
@@ -871,7 +873,9 @@ else
     apt-get install -y playonlinux
   fi
 
-  apt-get install -y winetricks
+  if [ "$ver" != "forky" ]; then # TODO
+    apt-get install -y winetricks
+  fi
 
   if [[ "$ver" == "noble" || "$ver" == "trixie" ]]; then
     apt-get install -y python3-pyasyncore
@@ -1022,7 +1026,7 @@ EOF
 fi
 
 # fixes for Bookworm, Jammy, Noble (see LP#1947420) and Resolute
-if [[ "$ver" == "bookworm" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" ]]; then
+if [[ "$ver" == "bookworm" || "$ver" == "forky" || "$ver" == "resolute" || "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "astra12" || "$ver" == "trixie" ]]; then
   if [[ "$ver" != "trixie" && "$ver" != "forky" && "$ver" != "resolute" ]]; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv E756285F30DB2B2BB35012E219BFCAF5168D33A9
   fi
