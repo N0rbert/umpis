@@ -570,7 +570,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
 
   if [[ "$ver" == "jammy" || "$ver" == "noble" || "$ver" == "bookworm" || "$ver" == "astra12" ]]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/desktop/jammy/amd64/rstudio-2022.02.3-492-amd64.deb -O rstudio-latest-amd64.deb
-  elif [ "$ver" == "focal" ]; then
+  elif [[ "$ver" == "focal" || "$ver" == "bullseye" ]]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/focal/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
   elif [[ "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" ]]; then
     wget -c https://s3.amazonaws.com/rstudio-ide-build/electron/jammy/amd64/rstudio-2024.12.1-563-amd64.deb -O rstudio-latest-amd64.deb
