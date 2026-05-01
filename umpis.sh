@@ -51,7 +51,7 @@ if lsb_release -cs | grep -qE -e "trusty" -e "xenial|sarah|serena|sonya|sylvia" 
     ver=astra12
   fi
 else
-  echo "Currently only Debian 9, 10, 11, 12, 13 and upcoming 14; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 24.04 LTS and upcoming 26.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1, 22.2 and 22.3; LMDE 3, 4, 5, 6 and 7 are supported!"
+  echo "Currently only Debian 9, 10, 11, 12, 13 and upcoming 14; AstraLinux 2.12, 1.7 and 1.8; Ubuntu MATE 14.04 LTS, 16.04 LTS, 18.04 LTS, 20.04 LTS, 22.04 LTS, 24.04 LTS and 26.04 LTS; Linux Mint 18, 18.1, 18.2, 18.3, 19, 19.1, 19.2, 19.3, 20, 20.1, 20.2, 20.3, 21, 21.1, 21.2, 21.3, 22, 22.1, 22.2 and 22.3; LMDE 3, 4, 5, 6 and 7 are supported!"
   exit 1
 fi
 
@@ -184,6 +184,18 @@ fi
 # revert to normal sudo
 if [ "$ver" == "resolute" ]; then
   update-alternatives --set sudo /usr/bin/sudo.ws --force
+fi
+
+# fix for CVE-2026-31431 (AKA copy.fail)
+if [ $is_docker == 0 ]; then
+  cat <<EOF > /etc/modprobe.d/disable-algif_aead.conf
+# Disable algif_aead module due to CVE-2026-31431 (AKA copy.fail)
+# This will likely be re-enabled in a subsequent update once an updated
+# kernel has been deployed.
+# Blacklisting the module isn't sufficient, we need to do as below:
+install algif_aead /bin/false
+EOF
+  modprobe -r algif_aead || true
 fi
 
 # add-apt-repository, wget
