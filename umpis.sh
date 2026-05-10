@@ -198,6 +198,17 @@ EOF
   modprobe -r algif_aead || true
 fi
 
+# fix for CVE-2026-43284 and CVE-2026-43500 (AKA DirtyFrag)
+if [ $is_docker == 0 ]; then
+  cat <<EOF > /etc/modprobe.d/dirtyfrag.conf
+install esp4 /bin/false
+install esp6 /bin/false
+install rxrpc /bin/false
+EOF
+  modprobe -r esp4 esp6 rxrpc || true
+  echo 3 > /proc/sys/vm/drop_caches
+fi
+
 # add-apt-repository, wget
 if [[ "$ver" != "astra10" && "$ver" != "trixie" && "$ver" != "forky" ]]; then
   apt-get install -y software-properties-common wget
