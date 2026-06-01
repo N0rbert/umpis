@@ -702,8 +702,11 @@ fi
 if [[ "$ver" == "buster" || "$ver" == "astra10" ]]; then
     r_ver="4.4"
 fi
-if [[ "$ver" == "focal" || "$ver" == "bullseye" || "$ver" == "trixie" || "$ver" == "forky" || "$ver" == "resolute" ]]; then
+if [[ "$ver" == "focal" || "$ver" == "bullseye" || "$ver" == "trixie" || "$ver" == "resolute" ]]; then
     r_ver="4.5"
+fi
+if [ "$ver" == "forky" ]; then
+    r_ver="4.6"
 fi
 
 ## Use R-packages with specific versions for reproducibility
