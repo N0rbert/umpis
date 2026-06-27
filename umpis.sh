@@ -209,6 +209,14 @@ EOF
   echo 3 > /proc/sys/vm/drop_caches
 fi
 
+# fix for CVE-2026-46331 (AKA PEdit-CoW)
+if [ $is_docker == 0 ]; then
+  cat <<EOF > /etc/modprobe.d/blacklist-act-pedit.conf
+install act_pedit /bin/false
+EOF
+  modprobe -r act_pedit || true
+fi
+
 # add-apt-repository, wget
 if [[ "$ver" != "astra10" && "$ver" != "trixie" && "$ver" != "forky" ]]; then
   apt-get install -y software-properties-common wget
