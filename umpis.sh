@@ -674,6 +674,21 @@ if [[ "$dpkg_arch" == "amd64" || "$dpkg_arch" == "arm64" ]]; then
   fi
 fi
 
+# set R CRAN mirror system-wide
+sed -i "s|https://cloud.r-project.org|https://cran.r-project.org|" /etc/R/Rprofile.site
+
+# set R CRAN mirror for current user to be completely sure it is set
+
+if [ $is_docker == 0 ]; then
+  cat <<EOF | sudo -u "$SUDO_USER" -- tee -a "$HOME/.Rprofile"
+local({
+    r <- getOption("repos")
+    r["CRAN"] <- "https://cran.r-project.org"
+    options(repos = r)
+})
+EOF
+fi
+
 # bookdown install for local user
 apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libfribidi-dev libtiff-dev libharfbuzz-dev libwebp-dev cmake libuv1-dev
 
@@ -733,11 +748,11 @@ if [[ "$ver" == "trusty" || "$ver" == "stretch" || "$ver" == "astra9" || "$ver" 
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/x86_64-pc-linux-gnu-library/$r_ver"
       sudo -u "$SUDO_USER" -- R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
       sudo -u "$SUDO_USER" -- R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
       R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/evaluate/evaluate_0.23.tar.gz', repos=NULL, type='source')"
-      R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), repos='http://cran.r-project.org/', type='source')"
+      R -e "install.packages(c('bookdown', 'knitr', 'xaringan', 'tikzDevice'), type='source')"
       R -e "install.packages(c('https://cran.r-project.org/src/contrib/Archive/bookdown/bookdown_${bookdown_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/knitr/knitr_${knitr_ver}.tar.gz', 'https://cran.r-project.org/src/contrib/Archive/xaringan/xaringan_${xaringan_ver}.tar.gz'), repos=NULL, type='source')"
     fi
   fi
@@ -746,23 +761,23 @@ else
   if [ "$dpkg_arch" == "amd64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/x86_64-pc-linux-gnu-library/$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/', lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), lib='$HOME/R/x86_64-pc-linux-gnu-library/$r_ver')"
     else
-      R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/')"
+      R -e "install.packages(c('devtools','tikzDevice','remotes'))"
     fi
   elif [ "$dpkg_arch" == "arm64" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/aarch64-unknown-linux-gnu-library/$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/', lib='$HOME/R/aarch64-unknown-linux-gnu-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), lib='$HOME/R/aarch64-unknown-linux-gnu-library/$r_ver')"
     else
-      R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/')"
+      R -e "install.packages(c('devtools','tikzDevice','remotes'))"
     fi
   elif [ "$dpkg_arch" == "armhf" ]; then
     if [ $is_docker == 0 ] ; then
       sudo -u "$SUDO_USER" -- mkdir -p "$HOME/R/arm-unknown-linux-gnueabihf-library/$r_ver"
-      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/', lib='$HOME/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
+      sudo -u "$SUDO_USER" -- R -e "install.packages(c('devtools','tikzDevice','remotes'), lib='$HOME/R/arm-unknown-linux-gnueabihf-library/$r_ver')"
     else
-      R -e "install.packages(c('devtools','tikzDevice','remotes'), repos='http://cran.r-project.org/')"
+      R -e "install.packages(c('devtools','tikzDevice','remotes'))"
     fi
   fi
 
@@ -954,7 +969,7 @@ fi
 if [ "$ver" != "trusty" ]; then
   apt-get update
   apt-get install -y flatpak
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
 fi
 
 # Ubuntu Make
