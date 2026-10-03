@@ -793,6 +793,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
     sudo -u "$SUDO_USER" -- mkdir -p "$HOME/.local/share/applications/"
     sudo -u "$SUDO_USER" -- cp /usr/share/applications/rstudio.desktop "$HOME/.local/share/applications/"
     sudo -u "$SUDO_USER" -- sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|"  "$HOME/.local/share/applications/rstudio.desktop"
+    sudo -u "$SUDO_USER" -- sed -i "s|/usr/lib/rstudio/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/rstudio|"  "$HOME/.local/share/applications/rstudio.desktop"
   else
     ## fixes for LibreOffice <-> RStudio interaction
     grep "^alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" /etc/skel/.profile || echo "alias rstudio=\"env LD_LIBRARY_PATH=/usr/lib/libreoffice/program:\$LD_LIBRARY_PATH rstudio\"" >> /etc/skel/.profile
@@ -801,6 +802,7 @@ if [ "$dpkg_arch" == "amd64" ]; then
     mkdir -p /usr/local/share/applications/
     cp /usr/share/applications/rstudio.desktop /usr/local/share/applications/
     sed -i "s|/usr/lib/rstudio/bin/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/bin/rstudio|" /usr/local/share/applications/rstudio.desktop
+    sed -i "s|/usr/lib/rstudio/rstudio|env LD_LIBRARY_PATH=/usr/lib/libreoffice/program /usr/lib/rstudio/rstudio|" /usr/local/share/applications/rstudio.desktop
   fi
 fi
 
